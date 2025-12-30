@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 4.1)
-project(Paco_Music_Player C)
+project(Paco_Music_Player)
 
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #region Dependencies
+include(FetchContent)
+
+#region Raylib
 set(RAYLIB_VERSION 5.5)
 find_package(raylib ${RAYLIB_VERSION} QUIET) # QUIET or REQUIRED
 set(BUILD_EXAMPLES OFF CACHE BOOL "")
@@ -20,17 +23,24 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
         set(FETCHCONTENT_QUIET NO)
 
         FetchContent_MakeAvailable(raylib)
-    endif()
-endif()
+    endif ()
+endif ()
 #endregion
 
-# Project
-set(CMAKE_C_STANDARD 23)
+#region GTest
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/52eb8108c5bdec04579160ae17225d66034bd723.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+#endregion
+#endregion
 
-add_library(filesystem src/filesystem/filesystem.c)
-add_compile_options(-Wall -Wextra -pedantic -Werror)
+add_subdirectory(src)
 
-add_executable(${PROJECT_NAME} src/main.c)
-#set(raylib_VERBOSE 1)
-target_link_libraries(${PROJECT_NAME} filesystem)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+enable_testing()
+add_subdirectory(tests)
