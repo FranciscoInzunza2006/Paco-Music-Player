@@ -1,7 +1,8 @@
 
-add_library(filesystem
+message("\"Filesystem\" module")
+
+add_library(Filesystem
         filesystem.c
         filesystem.h
 )
-
-target_include_directories(filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(Filesystem PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

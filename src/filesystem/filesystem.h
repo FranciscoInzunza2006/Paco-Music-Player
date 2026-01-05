@@ -6,17 +6,26 @@
 
 #pragma once
 #include <stddef.h>
-#include <stdbool.h>
+#include <windows.h>
 
-typedef struct {
-    const char* name;
-    bool is_file;
-} DirectoryEntry;
+// TODO: Convert library into a dynamic one
 
-typedef struct {
-    DirectoryEntry* entries;
-    size_t count;
-} DirectoryList;
+// typedef struct {
+//     const char* name;
+//     bool is_file;
+// } DirectoryEntry;
+//
+// typedef struct {
+//     DirectoryEntry* entries;
+//     size_t count;
+// } DirectoryList;
 
-bool getDirectoryList(const char* path, DirectoryList** list);
-void freeDirectoryList(DirectoryList* list);
+void hello();
+
+bool filesystemExists(const wchar_t* path);
+
+// bool getDirectoryList(const char* path, DirectoryList** list);
+// void freeDirectoryList(DirectoryList* list);
+
+// Returns pointer, your problem now.
+const wchar_t* toWideChar(const char* str);

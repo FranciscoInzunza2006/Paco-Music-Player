@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.1)
-project(Paco_Music_Player)
+project(Paco_Music_Player VERSION 0.1 LANGUAGES C CXX)
 
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

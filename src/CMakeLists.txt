@@ -8,5 +8,5 @@ add_subdirectory(filesystem)
 add_executable(${PROJECT_NAME} main.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME}
-        PRIVATE filesystem
+        PRIVATE Filesystem
 )
