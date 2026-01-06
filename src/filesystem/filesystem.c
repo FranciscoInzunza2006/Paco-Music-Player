@@ -35,7 +35,7 @@ bool filesystemExists(const wchar_t* path) {
     return false;
 }
 
-const wchar_t* toWideChar(const char* str) {
+wchar_t* toWideChar(const char* str) {
     const size_t string_length = mbrtowc(nullptr, str, 0, nullptr) + 1;
     wchar_t* wstr = malloc(sizeof(wchar_t) * string_length);
     mbrtowc(wstr, str, string_length, nullptr);
