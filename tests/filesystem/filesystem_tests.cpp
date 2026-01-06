@@ -5,12 +5,13 @@
 #include "filesystem.h"
 #include <gtest/gtest.h>
 
-constexpr const wchar_t* SAMPLE_PATH = L"C:\\Projects\\Paco's Music Player\\tests\\filesystem\\samples";
+constexpr const wchar_t *SAMPLE_PATH = L"C:\\Projects\\Paco's Music Player\\tests\\filesystem\\samples";
 
 TEST(FilesystemTest, existsFile) {
-    hello();
-    //const wchar_t *filePath = toWideChar("D:\\Imágenes\\Religión\\Aprobado.png");
-    ASSERT_TRUE(filesystemExists(L"D:\\Imágenes\\Religión\\Aprobado.png"));
+    const wchar_t *filePath = L"D:\\Imágenes\\Religión\\Aprobado.png";
+    const bool exists = filesystemExists(filePath);
+
+    ASSERT_TRUE(exists);
 }
 
 TEST(FilesystemTest, existsFolder) {
