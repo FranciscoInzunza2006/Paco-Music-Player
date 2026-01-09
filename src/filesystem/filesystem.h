@@ -1,4 +1,3 @@
-
 // So I need to get all the entries in the given directory
 // I won't bother with recursive searches (although I should consider them)
 
@@ -14,12 +13,26 @@
 extern "C" {
 #endif
 
-void hello();
+    constexpr size_t FILESYSTEM_MAX_PATH_LENGTH = 260;
 
-bool filesystemExists(const wchar_t* path);
+    typedef struct {
+        wchar_t* name;
+        bool is_directory;
+    } FilesystemEntry;
+
+    typedef struct {
+        wchar_t* path;
+        FilesystemEntry* entries;
+        size_t count;
+        size_t capacity;
+    } FilesystemDirectoryContents;
+
+bool filesystemExists(const wchar_t *path);
+FilesystemDirectoryContents* filesystemDirectoryGetContents(const wchar_t *directory_path);
+    void FilesystemFreeDirectoryContents(FilesystemDirectoryContents* contents);
 
 // Returns pointer, your problem now.
-wchar_t* toWideChar(const char* str);
+wchar_t *toWideChar(const char *str);
 
 #ifdef __cplusplus
 }
