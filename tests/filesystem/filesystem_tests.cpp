@@ -45,11 +45,17 @@ TEST(FilesystemTest, getContents) {
 
     //ASSERT_TRUE(entries.count == 3);
     ASSERT_TRUE(contents != nullptr);
+    ASSERT_TRUE(contents->entries != nullptr);
+    ASSERT_TRUE(contents->count == 3);
 
-    for (size_t i = 0; i < contents->count; i++) {
-        const FilesystemEntry entry = contents->entries[i];
-        printf("\t - %ls\n", entry.name);
-    }
+    EXPECT_STREQ(contents->entries[0].name, L"0.txt");
+    EXPECT_STREQ(contents->entries[1].name, L"1.txt");
+    EXPECT_STREQ(contents->entries[2].name, L"2.txt");
+
+    // for (size_t i = 0; i < contents->count; i++) {
+    //     const FilesystemEntry entry = contents->entries[i];
+    //     printf("\t - %ls\n", entry.name);
+    // }
 
     filesystemFreeDirectoryContents(contents);
 }
