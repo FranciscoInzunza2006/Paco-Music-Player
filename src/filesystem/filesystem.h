@@ -7,7 +7,15 @@
 #include <stddef.h>
 #include <windows.h>
 
-// TODO: Convert library into a dynamic one
+#ifdef _WIN32
+  #ifdef FILESYSTEM_EXPORTS
+    #define FS_API __declspec(dllexport)
+  #else
+    #define FS_API __declspec(dllimport)
+  #endif
+#else
+  #define FS_API
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,17 +37,17 @@ typedef struct {
 } FilesystemDirectoryContents;
 
     /// Takes a path to a file or directory and returns if it was found/exists.
-bool filesystemExists(const wchar_t *path);
+FS_API bool filesystemExists(const wchar_t *path);
 
 /// @param directory_path Valid directory path
 /// @return A pointer to a data structure with the contents of the directory. Free using the respective function.
-FilesystemDirectoryContents *filesystemDirectoryGetContents(const wchar_t *directory_path);
+FS_API FilesystemDirectoryContents *filesystemDirectoryGetContents(const wchar_t *directory_path);
 
     /// Releases all the memory of the FilesystemDirectoryContents structure pointed to. This functions takes also releases all the entries.
-void filesystemFreeDirectoryContents(FilesystemDirectoryContents *contents);
+FS_API void filesystemFreeDirectoryContents(FilesystemDirectoryContents *contents);
 
 /// Converts a ASCII array to a wide character array. Caller gets the ownership.
-wchar_t *toWideChar(const char *str);
+FS_API wchar_t *toWideChar(const char *str);
 
 #ifdef __cplusplus
 }

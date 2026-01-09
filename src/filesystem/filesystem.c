@@ -8,20 +8,6 @@
 #include <tchar.h>
 #include <strsafe.h>
 
-// bool getDirectoryList(const char* path, DirectoryList** list) {
-//     *list = malloc(sizeof(DirectoryList) * 256);
-//
-//     WIN32_FIND_DATAA find_data;
-//     FindFirstFileA(path, &find_data);
-//
-//     return true;
-// }
-//
-// void freeDirectoryList(DirectoryList* list) {
-//     free(list);
-// }
-
-
 bool filesystemExists(const wchar_t *path) {
     WIN32_FIND_DATAW _;
     HANDLE h = FindFirstFileW(path, &_);
@@ -65,7 +51,7 @@ FilesystemDirectoryContents *filesystemDirectoryGetContents(const wchar_t *direc
 
     do {
         const bool is_link_directory = wcsncmp(L".", find_file_data.cFileName, FILESYSTEM_MAX_PATH_LENGTH) == 0
-                                 || wcsncmp(L"..", find_file_data.cFileName, FILESYSTEM_MAX_PATH_LENGTH) == 0;
+                                       || wcsncmp(L"..", find_file_data.cFileName, FILESYSTEM_MAX_PATH_LENGTH) == 0;
         if (is_link_directory) continue;
 
         if (contents->count >= contents->capacity) {
