@@ -41,7 +41,7 @@ TEST(FilesystemTest, getContents) {
     const wchar_t* search_path = SAMPLES_DIRECTORY_PATH;
     ASSERT_TRUE(filesystemExists(search_path));
 
-    const FilesystemDirectoryContents* contents = filesystemDirectoryGetContents(search_path);
+    FilesystemDirectoryContents* contents = filesystemDirectoryGetContents(search_path);
 
     //ASSERT_TRUE(entries.count == 3);
     ASSERT_TRUE(contents != nullptr);
@@ -50,4 +50,6 @@ TEST(FilesystemTest, getContents) {
         const FilesystemEntry entry = contents->entries[i];
         printf("\t - %ls\n", entry.name);
     }
+
+    filesystemFreeDirectoryContents(contents);
 }

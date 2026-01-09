@@ -36,7 +36,7 @@ bool filesystemExists(const wchar_t *path);
 FilesystemDirectoryContents *filesystemDirectoryGetContents(const wchar_t *directory_path);
 
     /// Releases all the memory of the FilesystemDirectoryContents structure pointed to. This functions takes also releases all the entries.
-void FilesystemFreeDirectoryContents(FilesystemDirectoryContents *contents);
+void filesystemFreeDirectoryContents(FilesystemDirectoryContents *contents);
 
 /// Converts a ASCII array to a wide character array. Caller gets the ownership.
 wchar_t *toWideChar(const char *str);
