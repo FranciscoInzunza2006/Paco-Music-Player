@@ -1,10 +1,9 @@
 
 include(GoogleTest)
 
-add_executable(filesystem_tests filesystem/filesystem_tests.cpp
-        filesystem/filesystem_tests.cpp)
-target_link_libraries(filesystem_tests
-        filesystem
+add_executable(example_test test_example/example_tests.cpp
+        test_example/example_tests.cpp)
+target_link_libraries(example_test
         GTest::gtest_main
 )
-gtest_discover_tests(filesystem_tests)
+gtest_discover_tests(example_test)
