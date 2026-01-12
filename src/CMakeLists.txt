@@ -9,4 +9,5 @@ add_executable(${PROJECT_NAME} main.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME}
         PRIVATE Filesystem
+        PRIVATE raylib
 )

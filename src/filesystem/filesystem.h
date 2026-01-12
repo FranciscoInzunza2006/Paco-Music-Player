@@ -5,7 +5,6 @@
 
 #pragma once
 #include <stddef.h>
-#include <windows.h>
 
 #ifdef __cplusplus
 extern "C" {
