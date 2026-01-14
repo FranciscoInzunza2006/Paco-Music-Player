@@ -77,6 +77,10 @@ Track* getTrackWithMetadataFromFile(const char* path) {
     track->genre = copyString(taglib_tag_genre(tag));
     track->track_number = taglib_tag_track(tag);
 
+    if (strcmp(track->title, "") == 0) {
+        track->title = copyString(GetFileNameWithoutExt(path));
+    }
+
 cleanup:
     taglib_file_free(file);
     taglib_tag_free_strings();
@@ -110,8 +114,9 @@ TrackList getTracksFromPaths() {
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
-        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
-        // "D:\\Musica\\OFF",
+        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
+        //"D:\\Musica\\OFF",
+        "D:\\Musica\\Ribbit",
     };
     constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
 
