@@ -26,6 +26,14 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
     endif ()
 endif ()
 
+# RayGUI
+FetchContent_Declare(
+        raygui
+        URL https://github.com/raysan5/raygui/archive/refs/tags/4.0.tar.gz
+)
+FetchContent_MakeAvailable(raygui)
+add_subdirectory(${raygui_SOURCE_DIR}/projects/CMake)
+
 # Taglib
 set(BUILD_TESTING OFF)
 FetchContent_Declare(
