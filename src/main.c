@@ -144,17 +144,54 @@ TrackList getTracksFromPaths() {
 int main(void) {
     TrackList all_tracks = getTracksFromPaths();
 
-    for (size_t i = 0; i < all_tracks.count; i++) {
-        const Track* track = all_tracks.items[i];
-        printf("Path: \"%s\"\n"
-               "Title: %s\n"
-               "Artist: %s\n"
-               "Track number: %u\n"
-               "Album: %s\n\n",
-               track->file_path, track->title, track->artist, track->track_number, track->album);
+    // for (size_t i = 0; i < all_tracks.count; i++) {
+    //     const Track* track = all_tracks.items[i];
+    //     printf("Path: \"%s\"\n"
+    //            "Title: %s\n"
+    //            "Artist: %s\n"
+    //            "Track number: %u\n"
+    //            "Album: %s\n\n",
+    //            track->file_path, track->title, track->artist, track->track_number, track->album);
+    // }
+
+    // Separate all the tracks into different albums
+    struct AlbumThingy {
+        char* name;
+        size_t count;
+    };
+    struct AlbumThingyList {
+        struct AlbumThingy* items;
+        size_t count;
+        size_t capacity;
+    };
+    struct AlbumThingyList album_thingy_list = {};
+    for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
+        const Track* track = all_tracks.items[track_index];
+
+        for (size_t i = 0; i < album_thingy_list.count; i++) {
+            if (strcmp(track->album, album_thingy_list.items[i].name) == 0) {
+                album_thingy_list.items[i].count++;
+                goto next_track;
+            }
+        }
+
+        const struct AlbumThingy a = {
+            .name = copyString(track->album),
+            .count = 1
+        };
+        DYNAMIC_ARRAY_APPEND(album_thingy_list, a);
+
+    next_track:
+
     }
 
-        // Separate all the tracks into different albums
+    for (size_t i = 0; i < album_thingy_list.count; i++) {
+        printf("Album: \"%s\"\n"
+               "Number of tracks: %llu\n"
+               "\n", album_thingy_list.items[i].name, album_thingy_list.items[i].count);
+    }
+
+
     // Album albums[16] = {0};
     // size_t registered_albums = 0;
     // for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
