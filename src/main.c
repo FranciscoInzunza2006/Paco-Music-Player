@@ -12,7 +12,7 @@ constexpr size_t DYNAMIC_ARRAY_STARTING_CAPACITY = 4;
             if (array.capacity == 0) array.capacity = DYNAMIC_ARRAY_STARTING_CAPACITY;\
             else array.capacity *= 2;\
         \
-            array.items = realloc(array.items, array.capacity * sizeof(*array.items));\
+            array.items = realloc(array.items, array.capacity * sizeof(*array.items)); /* NOLINT(*-suspicious-realloc-usage) */ \
         }\
         array.items[array.count++] = item;\
     } while (false)
@@ -167,7 +167,7 @@ int main(void) {
         for (size_t i = 0; i < albums.count; i++) {
             Album* album = &albums.items[i];
             if (strcmp(track->album, album->name) == 0) {
-                DYNAMIC_ARRAY_APPEND(album->tracks, track);
+                DYNAMIC_ARRAY_APPEND(album->tracks, track); // NOLINT(*-suspicious-realloc-usage)
                 goto next_track;
             }
         }
@@ -184,6 +184,7 @@ int main(void) {
         DYNAMIC_ARRAY_APPEND(albums, new_album);
     next_track:
 
+
     }
 
     for (size_t album_index = 0; album_index < albums.count; album_index++) {
@@ -199,65 +200,6 @@ int main(void) {
         }
         printf("\n");
     }
-
-
-    // Album albums[16] = {0};
-    // size_t registered_albums = 0;
-    // for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
-    //     Track* track = all_tracks.tracks[track_index];
-    //     for (size_t i = 0; i < registered_albums; i++) {
-    //         Album* album = &albums[i];
-    //         if (strcmp(track->album, album->name) == 0) {
-    //             // Append to album
-    //             if (album->count >= album->capacity) {
-    //                 if (album->capacity == 0) album->capacity = 4;
-    //                 else album->capacity *= 2;
-    //
-    //                 Track** new_buffer = realloc(album->tracks, album->capacity * sizeof(Track*));
-    //                 if (new_buffer == nullptr) {
-    //                     printf("Could not reallocate memory for new tracks\n");
-    //                     return -1;
-    //                 }
-    //                 album->tracks = new_buffer;
-    //             }
-    //             album->tracks[album->count++] = track;
-    //             goto next_track;
-    //         }
-    //     }
-    //
-    //     // Register new album
-    //     Album* album = &albums[registered_albums++];
-    //     album->name = copyString(track->album);
-    //     album->capacity = 0;
-    //     album->count = 0;
-    //     album->tracks = nullptr;
-    //
-    //     // Append to album
-    //     if (album->count >= album->capacity) {
-    //         if (album->capacity == 0) album->capacity = 4;
-    //         else album->capacity *= 2;
-    //
-    //         Track** new_buffer = realloc(album->tracks, album->capacity * sizeof(Track*));
-    //         if (new_buffer == nullptr) {
-    //             printf("Could not reallocate memory for new tracks\n");
-    //             return -1;
-    //         }
-    //         album->tracks = new_buffer;
-    //     }
-    //     album->tracks[album->count++] = track;
-    //
-    // next_track:
-    //
-    //
-    // }
-    //
-    // for (size_t album_index = 0; album_index < registered_albums; album_index++) {
-    //     Album* album = &albums[album_index];
-    //     printf("Album: \"%s\"\n"
-    //            "Number of songs: %llu\n"
-    //            "\n", album->name, album->count);
-    // }
-
 
     freeTrackList(&all_tracks);
 
