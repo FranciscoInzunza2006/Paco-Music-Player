@@ -155,60 +155,39 @@ int main(void) {
     // }
 
     // Separate all the tracks into different albums
-    struct AlbumThingy {
-        char* name;
-        size_t count;
-    };
-    struct AlbumThingyList {
-        struct AlbumThingy* items;
+    struct AlbumList {
+        Album* items;
         size_t count;
         size_t capacity;
     };
-    struct AlbumThingyList album_thingy_list = {};
+    struct AlbumList albums = {nullptr, 0, 0};
     for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
-        const Track* track = all_tracks.items[track_index];
+        Track* track = all_tracks.items[track_index];
 
-        for (size_t i = 0; i < album_thingy_list.count; i++) {
-            if (strcmp(track->album, album_thingy_list.items[i].name) == 0) {
-                album_thingy_list.items[i].count++;
+        for (size_t i = 0; i < albums.count; i++) {
+            Album* album = &albums.items[i];
+            if (strcmp(track->album, album->name) == 0) {
+                DYNAMIC_ARRAY_APPEND(album->tracks, track);
                 goto next_track;
             }
         }
 
-        const struct AlbumThingy a = {
+        Album new_album = {
             .name = copyString(track->album),
-            .count = 1
+            .tracks = (TrackList){
+                .items = nullptr,
+                .count = 0,
+                .capacity = 0,
+            }
         };
-        DYNAMIC_ARRAY_APPEND(album_thingy_list, a);
-
+        DYNAMIC_ARRAY_APPEND(new_album.tracks, track);
+        DYNAMIC_ARRAY_APPEND(albums, new_album);
     next_track:
 
     }
 
-    Album* albums = malloc(album_thingy_list.count * sizeof(Album));
-    for (size_t i = 0; i < album_thingy_list.count; i++) {
-        albums[i].name = copyString(album_thingy_list.items[i].name);
-        albums[i].tracks = (TrackList) {
-            .items = malloc(album_thingy_list.items->count * sizeof(Track*)),
-            .capacity = album_thingy_list.items[i].count,
-            .count = 0
-        };
-    }
-
-    for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
-        Track* track = all_tracks.items[track_index];
-        for (size_t album_index = 0; album_index < album_thingy_list.count; album_index++) {
-            Album* album = &albums[album_index];
-
-            if (strcmp(track->album, album->name) == 0) {
-                album->tracks.items[album->tracks.count++] = track;
-                break;
-            }
-        }
-    }
-
-    for (size_t album_index = 0; album_index < album_thingy_list.count; album_index++) {
-        const Album* album = &albums[album_index];
+    for (size_t album_index = 0; album_index < albums.count; album_index++) {
+        const Album* album = &albums.items[album_index];
         const TrackList* tracks = &album->tracks;
         printf("Album: \"%s\"\n"
                "Number of tracks: %llu\n",
