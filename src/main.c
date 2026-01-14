@@ -77,43 +77,61 @@ cleanup:
 }
 
 int main(void) {
-    Album album = {
-        .name = nullptr,
+    struct TrackList {
+        Track** tracks;
+        size_t count;
+        size_t capacity;
+    };
+
+    struct TrackList all_tracks = {
         .tracks = nullptr,
         .count = 0,
         .capacity = 0,
     };
 
-    constexpr char music_directory_path[] = "D:\\Musica\\OFF";
-    FilePathList music_files = LoadDirectoryFiles(music_directory_path);
+    const char* MUSIC_DIRECTORIES_PATH[] = {
+        "D:\\Musica\\OFF",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack"
+    };
+    constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
 
-    for (size_t i = 0; i < music_files.count; i++) {
-        const char* file_path = music_files.paths[i];
+    for (size_t directory_index = 0; directory_index < MUSIC_DIRECTORIES_COUNT; directory_index++) {
+        const char* music_directory_path = MUSIC_DIRECTORIES_PATH[directory_index];
 
-        //printf("%llu = %s\n", i, file_path);
+        FilePathList music_files = LoadDirectoryFiles(music_directory_path);
+        for (size_t file_path_index = 0; file_path_index < music_files.count; file_path_index++) {
+            const char* file_path = music_files.paths[file_path_index];
 
-        if (album.count >= album.capacity) {
-            if (album.capacity == 0) album.capacity = 4;
-            else album.capacity *= 2;
+            Track* track = getTrackWithMetadataFromFile(file_path);
+            if (track == nullptr) continue;
 
-            album.tracks = realloc(album.tracks, album.capacity * sizeof(Track*));
+            if (all_tracks.count >= all_tracks.capacity) {
+                if (all_tracks.capacity == 0) all_tracks.capacity = 4;
+                else all_tracks.capacity *= 2;
+
+                Track** new_buffer = realloc(all_tracks.tracks, all_tracks.capacity * sizeof(Track*));
+                if (new_buffer == nullptr) {
+                    printf("Could not reallocate memory for new tracks\n");
+                    return -1;
+                }
+                all_tracks.tracks = new_buffer;
+            }
+            all_tracks.tracks[all_tracks.count++] = track;
         }
-
-        Track* track = getTrackWithMetadataFromFile(file_path);
-        if (track != nullptr) {
-            album.tracks[album.count] = track;
-            album.count++;
-        }
+        UnloadDirectoryFiles(music_files);
     }
 
-    UnloadDirectoryFiles(music_files);
-
-    for (size_t i = 0; i < album.count; i++) {
+    for (size_t i = 0; i < all_tracks.count; i++) {
         printf("Path: \"%s\"\n"
                "Title: %s\n"
                "Artist: %s\n"
                "Track number: %u\n\n",
-               album.tracks[i]->file_path, album.tracks[i]->title, album.tracks[i]->artist, album.tracks[i]->track_number);
+               all_tracks.tracks[i]->file_path, all_tracks.tracks[i]->title, all_tracks.tracks[i]->artist,
+               all_tracks.tracks[i]->track_number);
     }
 
     return 0;
