@@ -90,12 +90,12 @@ int main(void) {
     };
 
     const char* MUSIC_DIRECTORIES_PATH[] = {
-        "D:\\Musica\\OFF",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
         "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
         "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
         "C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
         "C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
-        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack"
+        "D:\\Musica\\OFF",
     };
     constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
 
@@ -129,9 +129,10 @@ int main(void) {
         printf("Path: \"%s\"\n"
                "Title: %s\n"
                "Artist: %s\n"
-               "Track number: %u\n\n",
+               "Track number: %u\n"
+               "Album: %s\n\n",
                all_tracks.tracks[i]->file_path, all_tracks.tracks[i]->title, all_tracks.tracks[i]->artist,
-               all_tracks.tracks[i]->track_number);
+               all_tracks.tracks[i]->track_number, all_tracks.tracks[i]->album);
     }
 
     return 0;
