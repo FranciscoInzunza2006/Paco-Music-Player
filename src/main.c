@@ -5,7 +5,18 @@
 #include "raylib.h"
 #include "tag_c.h"
 
-struct Album_;
+constexpr size_t DYNAMIC_ARRAY_STARTING_CAPACITY = 4;
+#define DYNAMIC_ARRAY_APPEND(array, item)\
+    do {\
+        if (array.count >= array.capacity) {\
+            if (array.capacity == 0) array.capacity = DYNAMIC_ARRAY_STARTING_CAPACITY;\
+            else array.capacity *= 2;\
+        \
+            array.items = realloc(array.items, array.capacity * sizeof(*array.items));\
+        }\
+        array.items[array.count++] = item;\
+    } while (false)
+
 
 typedef struct {
     char* file_path;
@@ -19,15 +30,16 @@ typedef struct {
     unsigned int track_number;
 } Track;
 
-struct Album_ {
-    char* name;
-
-    Track** tracks;
+typedef struct {
+    Track** items;
     size_t count;
     size_t capacity;
-};
+} TrackList;
 
-typedef struct Album_ Album;
+typedef struct {
+    char* name;
+    TrackList tracks;
+} Album;
 
 static char* copyString(const char* source) {
     char* str = malloc((strlen(source) + 1) * sizeof(char));
@@ -76,19 +88,23 @@ cleanup:
     return track;
 }
 
-int main(void) {
-    struct TrackList {
-        Track** tracks;
-        size_t count;
-        size_t capacity;
-    };
+void freeTrack(const Track* track) {
+    free(track->file_path);
+    free(track->title);
+    free(track->artist);
+    free(track->album);
+    free(track->comment);
+    free(track->genre);
+}
 
-    struct TrackList all_tracks = {
-        .tracks = nullptr,
-        .count = 0,
-        .capacity = 0,
-    };
+void freeTrackList(TrackList* tracks) {
+    for (size_t i = 0; i < tracks->count; i++) {
+        freeTrack(tracks->items[i]);
+    }
+    free(tracks->items);
+}
 
+TrackList getTracksFromPaths() {
     const char* MUSIC_DIRECTORIES_PATH[] = {
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
@@ -99,118 +115,105 @@ int main(void) {
     };
     constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
 
+    TrackList tracks = {
+        .items = nullptr,
+        .count = 0,
+        .capacity = 0,
+    };
+
     for (size_t directory_index = 0; directory_index < MUSIC_DIRECTORIES_COUNT; directory_index++) {
         const char* music_directory_path = MUSIC_DIRECTORIES_PATH[directory_index];
 
         constexpr char VALID_FORMATS[] = ".mp3;.wav;.flac";
         // TODO: Add ALL the valid formats, between taglib and raylib.
-        FilePathList music_files = LoadDirectoryFilesEx(music_directory_path, VALID_FORMATS, false);
+        const FilePathList music_files = LoadDirectoryFilesEx(music_directory_path, VALID_FORMATS, false);
         for (size_t file_path_index = 0; file_path_index < music_files.count; file_path_index++) {
             const char* file_path = music_files.paths[file_path_index];
 
             Track* track = getTrackWithMetadataFromFile(file_path);
             if (track == nullptr) continue;
 
-            if (all_tracks.count >= all_tracks.capacity) {
-                if (all_tracks.capacity == 0) all_tracks.capacity = 4;
-                else all_tracks.capacity *= 2;
-
-                Track** new_buffer = realloc(all_tracks.tracks, all_tracks.capacity * sizeof(Track*));
-                if (new_buffer == nullptr) {
-                    printf("Could not reallocate memory for new tracks\n");
-                    return -1;
-                }
-                all_tracks.tracks = new_buffer;
-            }
-            all_tracks.tracks[all_tracks.count++] = track;
+            DYNAMIC_ARRAY_APPEND(tracks, track);
         }
         UnloadDirectoryFiles(music_files);
     }
 
+    return tracks;
+}
+
+int main(void) {
+    TrackList all_tracks = getTracksFromPaths();
+
     for (size_t i = 0; i < all_tracks.count; i++) {
+        const Track* track = all_tracks.items[i];
         printf("Path: \"%s\"\n"
                "Title: %s\n"
                "Artist: %s\n"
                "Track number: %u\n"
                "Album: %s\n\n",
-               all_tracks.tracks[i]->file_path, all_tracks.tracks[i]->title, all_tracks.tracks[i]->artist,
-               all_tracks.tracks[i]->track_number, all_tracks.tracks[i]->album);
+               track->file_path, track->title, track->artist, track->track_number, track->album);
     }
 
-    // Separate all the tracks into different albums
-    Album albums[16] = {0};
-    size_t registered_albums = 0;
-    for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
-        Track* track = all_tracks.tracks[track_index];
-        for (size_t i = 0; i < registered_albums; i++) {
-            Album* album = &albums[i];
-            if (strcmp(track->album, album->name) == 0) {
-                // Append to album
-                if (album->count >= album->capacity) {
-                    if (album->capacity == 0) album->capacity = 4;
-                    else album->capacity *= 2;
+        // Separate all the tracks into different albums
+    // Album albums[16] = {0};
+    // size_t registered_albums = 0;
+    // for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
+    //     Track* track = all_tracks.tracks[track_index];
+    //     for (size_t i = 0; i < registered_albums; i++) {
+    //         Album* album = &albums[i];
+    //         if (strcmp(track->album, album->name) == 0) {
+    //             // Append to album
+    //             if (album->count >= album->capacity) {
+    //                 if (album->capacity == 0) album->capacity = 4;
+    //                 else album->capacity *= 2;
+    //
+    //                 Track** new_buffer = realloc(album->tracks, album->capacity * sizeof(Track*));
+    //                 if (new_buffer == nullptr) {
+    //                     printf("Could not reallocate memory for new tracks\n");
+    //                     return -1;
+    //                 }
+    //                 album->tracks = new_buffer;
+    //             }
+    //             album->tracks[album->count++] = track;
+    //             goto next_track;
+    //         }
+    //     }
+    //
+    //     // Register new album
+    //     Album* album = &albums[registered_albums++];
+    //     album->name = copyString(track->album);
+    //     album->capacity = 0;
+    //     album->count = 0;
+    //     album->tracks = nullptr;
+    //
+    //     // Append to album
+    //     if (album->count >= album->capacity) {
+    //         if (album->capacity == 0) album->capacity = 4;
+    //         else album->capacity *= 2;
+    //
+    //         Track** new_buffer = realloc(album->tracks, album->capacity * sizeof(Track*));
+    //         if (new_buffer == nullptr) {
+    //             printf("Could not reallocate memory for new tracks\n");
+    //             return -1;
+    //         }
+    //         album->tracks = new_buffer;
+    //     }
+    //     album->tracks[album->count++] = track;
+    //
+    // next_track:
+    //
+    //
+    // }
+    //
+    // for (size_t album_index = 0; album_index < registered_albums; album_index++) {
+    //     Album* album = &albums[album_index];
+    //     printf("Album: \"%s\"\n"
+    //            "Number of songs: %llu\n"
+    //            "\n", album->name, album->count);
+    // }
 
-                    Track** new_buffer = realloc(album->tracks, album->capacity * sizeof(Track*));
-                    if (new_buffer == nullptr) {
-                        printf("Could not reallocate memory for new tracks\n");
-                        return -1;
-                    }
-                    album->tracks = new_buffer;
-                }
-                album->tracks[album->count++] = track;
-                goto next_track;
-            }
-        }
 
-        // Register new album
-        Album* album = &albums[registered_albums++];
-        album->name = copyString(track->album);
-        album->capacity = 0;
-        album->count = 0;
-        album->tracks = nullptr;
-
-        // Append to album
-        if (album->count >= album->capacity) {
-            if (album->capacity == 0) album->capacity = 4;
-            else album->capacity *= 2;
-
-            Track** new_buffer = realloc(album->tracks, album->capacity * sizeof(Track*));
-            if (new_buffer == nullptr) {
-                printf("Could not reallocate memory for new tracks\n");
-                return -1;
-            }
-            album->tracks = new_buffer;
-        }
-        album->tracks[album->count++] = track;
-
-        next_track:
-    }
-
-    for (size_t album_index = 0; album_index < registered_albums; album_index++) {
-        Album* album = &albums[album_index];
-        printf("Album: \"%s\"\n"
-            "Number of songs: %llu\n"
-            "\n", album->name, album->count);
-    }
+    freeTrackList(&all_tracks);
 
     return 0;
 }
-
-// UnloadDirectoryFiles(music_files);
-// taglib_tag_free_strings();
-//
-// InitWindow(500, 500, "Paco's Music Player");
-// SetTargetFPS(24);
-// while (!WindowShouldClose()) {
-//     BeginDrawing();
-//     ClearBackground(RAYWHITE);
-//
-//     for (size_t i = 0; i < album.count; i++) {
-//         PMP_Music *track = &album.tracks[i];
-//
-//         DrawText(TextFormat("%u - %s", track->track_number, track->title),
-//                  20, 20 + 20 * (int) i, 16, BLACK);
-//     }
-//
-//     EndDrawing();
-// }
