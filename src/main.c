@@ -185,10 +185,40 @@ int main(void) {
 
     }
 
+    Album* albums = malloc(album_thingy_list.count * sizeof(Album));
     for (size_t i = 0; i < album_thingy_list.count; i++) {
+        albums[i].name = copyString(album_thingy_list.items[i].name);
+        albums[i].tracks = (TrackList) {
+            .items = malloc(album_thingy_list.items->count * sizeof(Track*)),
+            .capacity = album_thingy_list.items[i].count,
+            .count = 0
+        };
+    }
+
+    for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
+        Track* track = all_tracks.items[track_index];
+        for (size_t album_index = 0; album_index < album_thingy_list.count; album_index++) {
+            Album* album = &albums[album_index];
+
+            if (strcmp(track->album, album->name) == 0) {
+                album->tracks.items[album->tracks.count++] = track;
+                break;
+            }
+        }
+    }
+
+    for (size_t album_index = 0; album_index < album_thingy_list.count; album_index++) {
+        const Album* album = &albums[album_index];
+        const TrackList* tracks = &album->tracks;
         printf("Album: \"%s\"\n"
-               "Number of tracks: %llu\n"
-               "\n", album_thingy_list.items[i].name, album_thingy_list.items[i].count);
+               "Number of tracks: %llu\n",
+               album->name, tracks->count);
+
+        for (size_t track_index = 0; track_index < tracks->count; track_index++) {
+            const Track* track = tracks->items[track_index];
+            printf("\t%u - \"%s\"\n", track->track_number, track->title);
+        }
+        printf("\n");
     }
 
 
