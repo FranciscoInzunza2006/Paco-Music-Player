@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "raylib.h"
+#include "raygui.h"
 #include "tag_c.h"
 
 //region Dynamic array macro
