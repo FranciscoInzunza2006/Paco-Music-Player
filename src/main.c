@@ -90,19 +90,22 @@ int main(void) {
     };
 
     const char* MUSIC_DIRECTORIES_PATH[] = {
-        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
-        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
-        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
-        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
+        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
+        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
+        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
+        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
         "C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
-        "D:\\Musica\\OFF",
+        // "D:\\Musica\\OFF",
     };
     constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
+
 
     for (size_t directory_index = 0; directory_index < MUSIC_DIRECTORIES_COUNT; directory_index++) {
         const char* music_directory_path = MUSIC_DIRECTORIES_PATH[directory_index];
 
-        FilePathList music_files = LoadDirectoryFiles(music_directory_path);
+        constexpr char VALID_FORMATS[] = ".mp3;.wav;.flac";
+        // TODO: Add ALL the valid formats, between taglib and raylib.
+        FilePathList music_files = LoadDirectoryFilesEx(music_directory_path, VALID_FORMATS, false);
         for (size_t file_path_index = 0; file_path_index < music_files.count; file_path_index++) {
             const char* file_path = music_files.paths[file_path_index];
 
