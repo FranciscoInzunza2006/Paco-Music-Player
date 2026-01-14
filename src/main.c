@@ -99,7 +99,6 @@ int main(void) {
     };
     constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
 
-
     for (size_t directory_index = 0; directory_index < MUSIC_DIRECTORIES_COUNT; directory_index++) {
         const char* music_directory_path = MUSIC_DIRECTORIES_PATH[directory_index];
 
@@ -136,6 +135,62 @@ int main(void) {
                "Album: %s\n\n",
                all_tracks.tracks[i]->file_path, all_tracks.tracks[i]->title, all_tracks.tracks[i]->artist,
                all_tracks.tracks[i]->track_number, all_tracks.tracks[i]->album);
+    }
+
+    // Separate all the tracks into different albums
+    Album albums[16] = {0};
+    size_t registered_albums = 0;
+    for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
+        Track* track = all_tracks.tracks[track_index];
+        for (size_t i = 0; i < registered_albums; i++) {
+            Album* album = &albums[i];
+            if (strcmp(track->album, album->name) == 0) {
+                // Append to album
+                if (album->count >= album->capacity) {
+                    if (album->capacity == 0) album->capacity = 4;
+                    else album->capacity *= 2;
+
+                    Track** new_buffer = realloc(album->tracks, album->capacity * sizeof(Track*));
+                    if (new_buffer == nullptr) {
+                        printf("Could not reallocate memory for new tracks\n");
+                        return -1;
+                    }
+                    album->tracks = new_buffer;
+                }
+                album->tracks[album->count++] = track;
+                goto next_track;
+            }
+        }
+
+        // Register new album
+        Album* album = &albums[registered_albums++];
+        album->name = copyString(track->album);
+        album->capacity = 0;
+        album->count = 0;
+        album->tracks = nullptr;
+
+        // Append to album
+        if (album->count >= album->capacity) {
+            if (album->capacity == 0) album->capacity = 4;
+            else album->capacity *= 2;
+
+            Track** new_buffer = realloc(album->tracks, album->capacity * sizeof(Track*));
+            if (new_buffer == nullptr) {
+                printf("Could not reallocate memory for new tracks\n");
+                return -1;
+            }
+            album->tracks = new_buffer;
+        }
+        album->tracks[album->count++] = track;
+
+        next_track:
+    }
+
+    for (size_t album_index = 0; album_index < registered_albums; album_index++) {
+        Album* album = &albums[album_index];
+        printf("Album: \"%s\"\n"
+            "Number of songs: %llu\n"
+            "\n", album->name, album->count);
     }
 
     return 0;
