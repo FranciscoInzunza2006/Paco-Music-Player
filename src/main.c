@@ -5,6 +5,7 @@
 #include "raylib.h"
 #include "tag_c.h"
 
+//region Dynamic array macro
 constexpr size_t DYNAMIC_ARRAY_STARTING_CAPACITY = 4;
 #define DYNAMIC_ARRAY_APPEND(array, item)\
     do {\
@@ -16,7 +17,7 @@ constexpr size_t DYNAMIC_ARRAY_STARTING_CAPACITY = 4;
         }\
         array.items[array.count++] = item;\
     } while (false)
-
+//endregion
 
 typedef struct {
     char* file_path;
@@ -40,6 +41,123 @@ typedef struct {
     char* name;
     TrackList tracks;
 } Album;
+
+typedef struct {
+    Album* items;
+    size_t count;
+    size_t capacity;
+} AlbumList;
+
+static char* copyString(const char* source);
+
+Track* getTrackWithMetadataFromFile(const char* path);
+
+void freeTrack(const Track* track);
+
+void freeTrackList(TrackList* tracks);
+
+void freeAlbum(Album* album, bool free_tracks);
+void freeAlbumList(AlbumList* albums, bool free_tracks);
+
+TrackList getTracksFromPaths();
+
+AlbumList organizeTracksIntoAlbums(const TrackList* tracks);
+
+int main(void) {
+    TrackList all_tracks = getTracksFromPaths();
+    AlbumList albums = organizeTracksIntoAlbums(&all_tracks);
+
+    for (size_t album_index = 0; album_index < albums.count; album_index++) {
+        const Album* album = &albums.items[album_index];
+        const TrackList* tracks = &album->tracks;
+        printf("Album: \"%s\"\n"
+               "Number of tracks: %llu\n",
+               album->name, tracks->count);
+
+        for (size_t track_index = 0; track_index < tracks->count; track_index++) {
+            const Track* track = tracks->items[track_index];
+            printf("\t%u - \"%s\"\n", track->track_number, track->title);
+            //     printf("Path: \"%s\"\n"
+            //            "Title: %s\n"
+            //            "Artist: %s\n"
+            //            "Track number: %u\n"
+            //            "Album: %s\n\n",
+            //            track->file_path, track->title, track->artist, track->track_number, track->album);
+        }
+        printf("\n");
+    }
+
+    freeTrackList(&all_tracks);
+    freeAlbumList(&albums, false);
+
+    return 0;
+}
+
+TrackList getTracksFromPaths() {
+    const char* MUSIC_DIRECTORIES_PATH[] = {
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
+        "D:\\Musica\\OFF",
+        "D:\\Musica\\Ribbit",
+    };
+    constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
+
+    TrackList tracks = {
+        .items = nullptr,
+        .count = 0,
+        .capacity = 0,
+    };
+
+    for (size_t directory_index = 0; directory_index < MUSIC_DIRECTORIES_COUNT; directory_index++) {
+        const char* music_directory_path = MUSIC_DIRECTORIES_PATH[directory_index];
+
+        constexpr char VALID_FORMATS[] = ".mp3;.wav;.flac";
+        // TODO: Add ALL the valid formats, between taglib and raylib.
+        const FilePathList music_files = LoadDirectoryFilesEx(music_directory_path, VALID_FORMATS, false);
+        for (size_t file_path_index = 0; file_path_index < music_files.count; file_path_index++) {
+            const char* file_path = music_files.paths[file_path_index];
+
+            Track* track = getTrackWithMetadataFromFile(file_path);
+            if (track == nullptr) continue;
+
+            DYNAMIC_ARRAY_APPEND(tracks, track);
+        }
+        UnloadDirectoryFiles(music_files);
+    }
+
+    return tracks;
+}
+
+AlbumList organizeTracksIntoAlbums(const TrackList* tracks) {
+    AlbumList albums = {nullptr, 0, 0};
+    for (size_t track_index = 0; track_index < tracks->count; track_index++) {
+        Track* track = tracks->items[track_index];
+
+        for (size_t i = 0; i < albums.count; i++) {
+            Album* album = &albums.items[i];
+            if (strcmp(track->album, album->name) == 0) {
+                DYNAMIC_ARRAY_APPEND(album->tracks, track); // NOLINT(*-suspicious-realloc-usage)
+                goto next_track;
+            }
+        }
+
+        Album new_album = {
+            .name = copyString(track->album),
+            .tracks = (TrackList){
+                .items = nullptr,
+                .count = 0,
+                .capacity = 0,
+            }
+        };
+        DYNAMIC_ARRAY_APPEND(new_album.tracks, track);
+        DYNAMIC_ARRAY_APPEND(albums, new_album);
+    next_track:;
+    }
+    return albums;
+}
 
 static char* copyString(const char* source) {
     char* str = malloc((strlen(source) + 1) * sizeof(char));
@@ -108,105 +226,13 @@ void freeTrackList(TrackList* tracks) {
     free(tracks->items);
 }
 
-TrackList getTracksFromPaths() {
-    const char* MUSIC_DIRECTORIES_PATH[] = {
-        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
-        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
-        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
-        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
-        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
-        //"D:\\Musica\\OFF",
-        "D:\\Musica\\Ribbit",
-    };
-    constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
-
-    TrackList tracks = {
-        .items = nullptr,
-        .count = 0,
-        .capacity = 0,
-    };
-
-    for (size_t directory_index = 0; directory_index < MUSIC_DIRECTORIES_COUNT; directory_index++) {
-        const char* music_directory_path = MUSIC_DIRECTORIES_PATH[directory_index];
-
-        constexpr char VALID_FORMATS[] = ".mp3;.wav;.flac";
-        // TODO: Add ALL the valid formats, between taglib and raylib.
-        const FilePathList music_files = LoadDirectoryFilesEx(music_directory_path, VALID_FORMATS, false);
-        for (size_t file_path_index = 0; file_path_index < music_files.count; file_path_index++) {
-            const char* file_path = music_files.paths[file_path_index];
-
-            Track* track = getTrackWithMetadataFromFile(file_path);
-            if (track == nullptr) continue;
-
-            DYNAMIC_ARRAY_APPEND(tracks, track);
-        }
-        UnloadDirectoryFiles(music_files);
-    }
-
-    return tracks;
+void freeAlbum(Album* album, bool free_tracks) {
+    free(album->name);
+    if (free_tracks) freeTrackList(&album->tracks);
 }
-
-int main(void) {
-    TrackList all_tracks = getTracksFromPaths();
-
-    // for (size_t i = 0; i < all_tracks.count; i++) {
-    //     const Track* track = all_tracks.items[i];
-    //     printf("Path: \"%s\"\n"
-    //            "Title: %s\n"
-    //            "Artist: %s\n"
-    //            "Track number: %u\n"
-    //            "Album: %s\n\n",
-    //            track->file_path, track->title, track->artist, track->track_number, track->album);
-    // }
-
-    // Separate all the tracks into different albums
-    struct AlbumList {
-        Album* items;
-        size_t count;
-        size_t capacity;
-    };
-    struct AlbumList albums = {nullptr, 0, 0};
-    for (size_t track_index = 0; track_index < all_tracks.count; track_index++) {
-        Track* track = all_tracks.items[track_index];
-
-        for (size_t i = 0; i < albums.count; i++) {
-            Album* album = &albums.items[i];
-            if (strcmp(track->album, album->name) == 0) {
-                DYNAMIC_ARRAY_APPEND(album->tracks, track); // NOLINT(*-suspicious-realloc-usage)
-                goto next_track;
-            }
-        }
-
-        Album new_album = {
-            .name = copyString(track->album),
-            .tracks = (TrackList){
-                .items = nullptr,
-                .count = 0,
-                .capacity = 0,
-            }
-        };
-        DYNAMIC_ARRAY_APPEND(new_album.tracks, track);
-        DYNAMIC_ARRAY_APPEND(albums, new_album);
-    next_track:
-
-
+void freeAlbumList(AlbumList* albums, bool free_tracks) {
+    for (size_t album_index = 0; album_index < albums->count; album_index++) {
+        freeAlbum(&albums->items[album_index], free_tracks);
     }
-
-    for (size_t album_index = 0; album_index < albums.count; album_index++) {
-        const Album* album = &albums.items[album_index];
-        const TrackList* tracks = &album->tracks;
-        printf("Album: \"%s\"\n"
-               "Number of tracks: %llu\n",
-               album->name, tracks->count);
-
-        for (size_t track_index = 0; track_index < tracks->count; track_index++) {
-            const Track* track = tracks->items[track_index];
-            printf("\t%u - \"%s\"\n", track->track_number, track->title);
-        }
-        printf("\n");
-    }
-
-    freeTrackList(&all_tracks);
-
-    return 0;
+    free(albums->items);
 }
