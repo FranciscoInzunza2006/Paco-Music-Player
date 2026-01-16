@@ -5,16 +5,10 @@
 #include "tracks.h"
 
 #include "raylib.h"
-#define RAYGUI_IMPLEMENTATION
 #include "music_player.h"
-#include "raygui.h"
+#include "interface.h"
 
 TrackList getTracksFromPaths();
-
-// Media Player
-Album* current_album = nullptr;
-Track* playing_track = nullptr;
-size_t playing_track_index = 0;
 
 static void ButtonShuffle() {
 }
@@ -41,82 +35,19 @@ int main(void) {
 
     current_album = &albums.items[0];
 
-    int listview_albumsScrollIndex = 0;
-    int listview_albumsActive = 0;
-    int listview_album_tracksScrollIndex = 0;
-    int listview_album_tracksActive = 0;
-    float sliderbar_volumeValue = 0.3f;
-    float sliderbar_progressValue = 0.0f;
+    GuiLayoutState state = interfaceInit();
 
-    InitWindow(800, 450, "Paco's Music Player");
-    InitAudioDevice();
     loadMusicIndex(&current_album->tracks, playing_track_index);
-
-    SetWindowState(FLAG_WINDOW_ALWAYS_RUN);
-    SetTargetFPS(60);
-
-    while (!WindowShouldClose()) {
+    while (interfaceShouldUpdate()) {
         // Update
         musicPlayer_updateMusic();
+        interfaceUpdate(&state);
 
         // Draw
-        BeginDrawing();
 
-        ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-
-        // Album
-        GuiDummyRec((Rectangle){24, 24, 256, 256}, nullptr);
-        GuiLabel((Rectangle){24, 280, 256, 32}, "Album name");
-
-        // Album selection
-        GuiListView((Rectangle){24, 312, 256, 120}, "ONE;TWO;THREE", &listview_albumsScrollIndex,
-                    &listview_albumsActive);
-
-        // Album track selection
-        GuiListView((Rectangle){296, 24, 480, 280}, "ONE;TWO;THREE;", &listview_album_tracksScrollIndex,
-                    &listview_album_tracksActive);
-
-        // Controls
-        if (GuiButton((Rectangle){320, 320, 32, 32}, "#077#")) ButtonShuffle();
-
-        const char* toggle_button_icon = GuiIconText(
-            musicPlayer_isMusicPlaying() ? ICON_PLAYER_PLAY : ICON_PLAYER_PAUSE, nullptr);
-        if (GuiButton((Rectangle){424, 320, 32, 32}, toggle_button_icon))
-            musicPlayer_toggleMusicPlaying();
-
-        if (GuiButton((Rectangle){376, 320, 32, 32}, "#129#")) ButtonPrevious();
-        if (GuiButton((Rectangle){472, 320, 32, 32}, "#134#")) ButtonNext();
-
-        // Volume bar
-        GuiSliderBar((Rectangle){536, 328, 224, 16},
-                     GuiIconText(ICON_AUDIO, nullptr),
-                     TextFormat("%d", (int) (sliderbar_volumeValue * 100)),
-                     &sliderbar_volumeValue, 0, 1);
-        if (sliderbar_volumeValue != musicPlayer_getVolume()) {
-            musicPlayer_setVolume(sliderbar_volumeValue);
-        }
-
-        // Time played bar
-        const float time_played = musicPlayer_getTimePlayed();
-        const float time_length = musicPlayer_getTimeLength();
-        const char* time_played_string = TextFormat("%02d:%02d", (int) (time_played / 60.0f), (int) time_played % 60);
-        const char* time_length_string = TextFormat("%02d:%02d", (int) (time_length / 60.0f), (int) time_length % 60);
-        const float progress = time_played / time_length;
-        sliderbar_progressValue = progress;
-        GuiSliderBar((Rectangle){376, 376, 384, 16}, time_played_string, time_length_string, &sliderbar_progressValue,
-                     0, 1);
-        if (fabsf(progress - sliderbar_progressValue) > 0.01f) {
-            musicPlayer_setMusicPosition(sliderbar_progressValue);
-        }
-
-        // Track name
-        const char* track_name = current_album->tracks.items[playing_track_index].title;
-        GuiLabel((Rectangle){392, 400, 384, 32}, GuiIconText(ICON_FILETYPE_AUDIO, track_name));
-
-        EndDrawing();
     }
+    interfaceCleanUp();
 
-    CloseWindow();
     //freeTrackList(&all_tracks);
     //freeAlbumList(&albums, false);
 

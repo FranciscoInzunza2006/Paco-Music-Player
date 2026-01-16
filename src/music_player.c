@@ -1,10 +1,18 @@
 #include "music_player.h"
 
+#include <stddef.h>
+
 #include "raylib.h"
+#include "tracks.h"
 
 Music music = {0};
 bool is_music_playing = false;
 float volume = 1.0f;
+
+Album* current_album = nullptr;
+Track* playing_track = nullptr;
+size_t playing_track_index = 0;
+
 
 bool musicPlayer_loadMusic(const char* path) {
     UnloadMusicStream(music);
