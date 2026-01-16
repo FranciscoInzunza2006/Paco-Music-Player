@@ -67,7 +67,7 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     state->button_shuffle_pressed = GuiButton((Rectangle){320, 320, 32, 32}, "#077#");
 
     const char* toggle_button_icon = GuiIconText(
-        musicPlayer_isPlaying() ? ICON_PLAYER_PLAY : ICON_PLAYER_PAUSE, nullptr);
+        musicPlayer_isPlaying() ? ICON_PLAYER_PAUSE : ICON_PLAYER_PLAY, nullptr);
     if (GuiButton((Rectangle){424, 320, 32, 32}, toggle_button_icon)) musicPlayer_toggleMusicPlaying();
 
     state->button_previous_pressed = GuiButton((Rectangle){376, 320, 32, 32}, "#129#");
