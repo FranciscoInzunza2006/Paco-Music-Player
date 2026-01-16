@@ -19,7 +19,7 @@ typedef struct {
 } Track;
 
 typedef struct {
-    Track** items;
+    Track* items;
     size_t count;
     size_t capacity;
 } TrackList;
@@ -35,7 +35,7 @@ typedef struct {
     size_t capacity;
 } AlbumList;
 
-Track* getTrackWithMetadataFromFile(const char* path);
+bool getTrackWithMetadataFromFile(const char* path, Track* output);
 
 void freeTrack(const Track* track);
 
