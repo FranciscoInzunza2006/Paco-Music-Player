@@ -67,9 +67,8 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     state->button_shuffle_pressed = GuiButton((Rectangle){320, 320, 32, 32}, "#077#");
 
     const char* toggle_button_icon = GuiIconText(
-        musicPlayer_isMusicPlaying() ? ICON_PLAYER_PLAY : ICON_PLAYER_PAUSE, nullptr);
-    if (GuiButton((Rectangle){424, 320, 32, 32}, toggle_button_icon))
-        musicPlayer_toggleMusicPlaying();
+        musicPlayer_isPlaying() ? ICON_PLAYER_PLAY : ICON_PLAYER_PAUSE, nullptr);
+    if (GuiButton((Rectangle){424, 320, 32, 32}, toggle_button_icon)) musicPlayer_toggleMusicPlaying();
 
     state->button_previous_pressed = GuiButton((Rectangle){376, 320, 32, 32}, "#129#");
     state->button_next_pressed = GuiButton((Rectangle){472, 320, 32, 32}, "#134#");
@@ -92,11 +91,11 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     float slider_bar_progress = progress;
     GuiSliderBar((Rectangle){376, 376, 384, 16}, time_played_string, time_length_string, &slider_bar_progress, 0, 1);
     if (fabsf(progress - slider_bar_progress) > 0.01f) {
-        musicPlayer_setMusicPosition(slider_bar_progress);
+        musicPlayer_setProgress(slider_bar_progress);
     }
 
     // Track name
-    const char* track_name = albums.items[current_album_index].tracks.items[current_track_index].title;
+    const char* track_name = musicPlayer_getCurrentTrack()->title;
     GuiLabel((Rectangle){392, 400, 384, 32}, GuiIconText(ICON_FILETYPE_AUDIO, track_name));
 
     EndDrawing();

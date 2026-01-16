@@ -12,14 +12,12 @@ TrackList getTracksFromPaths();
 
 int main(void) {
     TrackList all_tracks = getTracksFromPaths();
-    albums = organizeTracksIntoAlbums(&all_tracks);
-    current_album_index = 0;
-
     GuiLayoutState state = interfaceInit();
-    loadMusic(0);
+    musicPlayer_init(organizeTracksIntoAlbums(&all_tracks));
+    musicPlayer_changeTrack(0);
     while (interfaceShouldUpdate()) {
         // Update
-        musicPlayer_updateMusic();
+        musicPlayer_update();
         interfaceUpdate(&state);
 
         // Draw
