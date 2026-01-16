@@ -5,8 +5,10 @@
 #include "interface.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "music_player.h"
 #include "raygui.h"
+
+#include "raylib.h"
+#include "music_player.h"
 
 static void processState(GuiLayoutState* state);
 
@@ -39,7 +41,7 @@ void interfaceCleanUp() {
 }
 
 static void processState(GuiLayoutState* state) {
-    (void)(state);
+    (void) (state);
 }
 
 static void drawAndUpdateState(GuiLayoutState* state) {
@@ -75,10 +77,10 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     // Volume bar
     GuiSliderBar((Rectangle){536, 328, 224, 16},
                  GuiIconText(ICON_AUDIO, nullptr),
-                 TextFormat("%d", (int) (sliderbar_volumeValue * 100)),
-                 &sliderbar_volumeValue, 0, 1);
-    if (sliderbar_volumeValue != musicPlayer_getVolume()) {
-        musicPlayer_setVolume(sliderbar_volumeValue);
+                 TextFormat("%d", (int) (state->sliderbar_volumeValue * 100)),
+                 &state->sliderbar_volumeValue, 0, 1);
+    if (state->sliderbar_volumeValue != musicPlayer_getVolume()) {
+        musicPlayer_setVolume(state->sliderbar_volumeValue);
     }
 
     // Time played bar
@@ -94,7 +96,7 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     }
 
     // Track name
-    const char* track_name = current_album->tracks.items[playing_track_index].title;
+    const char* track_name = albums.items[current_album_index].tracks.items[current_track_index].title;
     GuiLabel((Rectangle){392, 400, 384, 32}, GuiIconText(ICON_FILETYPE_AUDIO, track_name));
 
     EndDrawing();

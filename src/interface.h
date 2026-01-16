@@ -5,7 +5,7 @@
 #pragma once
 
 constexpr int INTERFACE_WINDOW_WIDTH = 800;
-constexpr int INTERFACE_WINDOW_HEIGHT = 800;
+constexpr int INTERFACE_WINDOW_HEIGHT = 450;
 constexpr char INTERFACE_WINDOW_DEFAULT_TITLE[] = "Paco's Music Player";
 constexpr int INTERFACE_TARGET_FPS = 60;
 

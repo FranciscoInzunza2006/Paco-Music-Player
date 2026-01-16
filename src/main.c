@@ -1,43 +1,22 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "tracks.h"
 
-#include "raylib.h"
 #include "music_player.h"
 #include "interface.h"
 
 TrackList getTracksFromPaths();
 
-static void ButtonShuffle() {
-}
-
-static void loadMusicIndex(const TrackList* files, const size_t index) {
-    musicPlayer_loadMusic(files->items[index].file_path);
-}
-
-static void ButtonPrevious() {
-    if (playing_track_index > 0)
-        playing_track_index--;
-    loadMusicIndex(&current_album->tracks, playing_track_index);
-}
-
-static void ButtonNext() {
-    if (playing_track_index < current_album->tracks.count - 1)
-        playing_track_index++;
-    loadMusicIndex(&current_album->tracks, playing_track_index);
-}
+// static void ButtonShuffle() {
+// }
 
 int main(void) {
     TrackList all_tracks = getTracksFromPaths();
-    AlbumList albums = organizeTracksIntoAlbums(&all_tracks);
-
-    current_album = &albums.items[0];
+    albums = organizeTracksIntoAlbums(&all_tracks);
+    current_album_index = 0;
 
     GuiLayoutState state = interfaceInit();
-
-    loadMusicIndex(&current_album->tracks, playing_track_index);
+    loadMusic(0);
     while (interfaceShouldUpdate()) {
         // Update
         musicPlayer_updateMusic();

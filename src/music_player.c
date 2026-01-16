@@ -5,15 +5,14 @@
 #include "raylib.h"
 #include "tracks.h"
 
+//Album* current_album = nullptr;
+//Track* playing_track = nullptr;
+//size_t playing_track_index = 0;
+
+// Music Stuff
 Music music = {0};
 bool is_music_playing = false;
 float volume = 1.0f;
-
-Album* current_album = nullptr;
-Track* playing_track = nullptr;
-size_t playing_track_index = 0;
-
-
 bool musicPlayer_loadMusic(const char* path) {
     UnloadMusicStream(music);
 
@@ -63,3 +62,13 @@ void musicPlayer_setVolume(const float new_volume) {
 }
 
 float musicPlayer_getVolume() { return volume; }
+
+// Album and tracks stuff
+AlbumList albums = {0};
+size_t current_album_index = 0;
+size_t current_track_index = 0;
+void loadMusic(const size_t index) {
+    const Album* current_album = &albums.items[current_album_index];
+    Track* current_track = &current_album->tracks.items[current_track_index];
+    musicPlayer_loadMusic(current_track->file_path);
+}
