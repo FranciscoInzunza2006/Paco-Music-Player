@@ -28,7 +28,7 @@ static void ButtonPlay() {
 
 static void loadMusicIndex(const TrackList* files, const size_t index) {
     UnloadMusicStream(music);
-    music = LoadMusicStream(files->items[index]->file_path);
+    music = LoadMusicStream(files->items[index].file_path);
     PlayMusicStream(music);
 
     SetMusicVolume(music, volume);
@@ -106,7 +106,7 @@ int main(void) {
         GuiSliderBar((Rectangle){392, 376, 384, 16}, nullptr, nullptr, &sliderbar_progressValue, 0, 1);
 
         GuiLabel((Rectangle){392, 400, 384, 32},
-                 GuiIconText(ICON_FILETYPE_AUDIO, current_album->tracks.items[playing_track_index]->title)
+                 GuiIconText(ICON_FILETYPE_AUDIO, current_album->tracks.items[playing_track_index].title)
         );
 
         EndDrawing();
