@@ -55,7 +55,6 @@ int main(void) {
     SetWindowState(FLAG_WINDOW_ALWAYS_RUN);
     SetTargetFPS(60);
 
-    GuiSetIconScale(1);
     while (!WindowShouldClose()) {
         // Update
         musicPlayer_updateMusic();
@@ -89,8 +88,10 @@ int main(void) {
         if (GuiButton((Rectangle){472, 320, 32, 32}, "#134#")) ButtonNext();
 
         // Volume bar
-        //GuiDrawIcon(ICON_FILETYPE_AUDIO,520, 320, 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
-        GuiSliderBar((Rectangle){552, 328, 224, 16}, nullptr, nullptr, &sliderbar_volumeValue, 0, 1);
+        GuiSliderBar((Rectangle){536, 328, 224, 16},
+                     GuiIconText(ICON_AUDIO, nullptr),
+                     TextFormat("%d", (int) (sliderbar_volumeValue * 100)),
+                     &sliderbar_volumeValue, 0, 1);
         if (sliderbar_volumeValue != musicPlayer_getVolume()) {
             musicPlayer_setVolume(sliderbar_volumeValue);
         }
@@ -98,12 +99,12 @@ int main(void) {
         // Time played bar
         const float time_played = musicPlayer_getTimePlayed();
         const float time_length = musicPlayer_getTimeLength();
-        const char* time_string = TextFormat("%02d:%02d", (int) (time_played / 60.0f), (int) time_played % 60);
-        GuiLabel((Rectangle){320, 368, 64, 32}, time_string);
-
+        const char* time_played_string = TextFormat("%02d:%02d", (int) (time_played / 60.0f), (int) time_played % 60);
+        const char* time_length_string = TextFormat("%02d:%02d", (int) (time_length / 60.0f), (int) time_length % 60);
         const float progress = time_played / time_length;
         sliderbar_progressValue = progress;
-        GuiSliderBar((Rectangle){392, 376, 384, 16}, nullptr, nullptr, &sliderbar_progressValue, 0, 1);
+        GuiSliderBar((Rectangle){376, 376, 384, 16}, time_played_string, time_length_string, &sliderbar_progressValue,
+                     0, 1);
         if (fabsf(progress - sliderbar_progressValue) > 0.01f) {
             musicPlayer_setMusicPosition(sliderbar_progressValue);
         }
