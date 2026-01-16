@@ -126,7 +126,7 @@ int main(void) {
     loadMusicIndex(&current_album->tracks, playing_track_index);
 
     SetWindowState(FLAG_WINDOW_ALWAYS_RUN);
-    SetTargetFPS(24);
+    SetTargetFPS(60);
 
     GuiSetIconScale(1);
     while (!WindowShouldClose()) {
