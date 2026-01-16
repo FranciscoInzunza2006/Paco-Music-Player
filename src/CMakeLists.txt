@@ -1,5 +1,5 @@
 
-add_compile_options(-Wall -Wextra -pedantic -Werror)
+add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-unused-parameter)
 
 add_executable(Paco_Music_Player main.c)
 target_link_libraries(Paco_Music_Player
