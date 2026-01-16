@@ -11,7 +11,7 @@
 
 // Music stream handling
 Music music = {0};
-bool is_music_playing = false;
+//bool is_music_playing = false;
 float volume = 1.0f;
 
 static void stopMusic();
@@ -27,7 +27,6 @@ void musicPlayer_init(AlbumList album_list) {
     albums = album_list;
     current_album_index = 0;
     current_track_index = 0;
-    is_music_playing = false;
     stopMusic();
 }
 
@@ -61,9 +60,8 @@ void musicPlayer_setProgress(float progress) {
 }
 
 void musicPlayer_toggleMusicPlaying() {
-    is_music_playing = !is_music_playing;
-    if (is_music_playing) ResumeMusicStream(music);
-    else PauseMusicStream(music);
+    if (IsMusicStreamPlaying(music)) PauseMusicStream(music);
+    else ResumeMusicStream(music);
 }
 
 void musicPlayer_setVolume(const float new_volume) {
@@ -81,12 +79,12 @@ const Track* musicPlayer_getCurrentTrack() {
 }
 
 bool musicPlayer_isPlaying() {
-    return is_music_playing;
+    return IsMusicStreamPlaying(music);
 }
 
-bool musicPlayer_isPaused() {
-    return !is_music_playing;
-}
+// bool musicPlayer_isPaused() {
+//     return !IsMusicStreamPlaying(music);
+// }
 
 float musicPlayer_getTimePlayed() {
     return GetMusicTimePlayed(music);
@@ -102,20 +100,14 @@ float musicPlayer_getVolume() { return volume; }
 static void stopMusic() {
     UnloadMusicStream(music);
     music = (Music){0};
-    is_music_playing = false;
 }
 
 void changeMusic(const char* new_music_path) {
     UnloadMusicStream(music);
 
     music = LoadMusicStream(new_music_path);
-    if (!IsMusicValid(music)) {
-        is_music_playing = false;
-        return;
-    }
+    if (!IsMusicValid(music)) return;
 
     PlayMusicStream(music);
     SetMusicVolume(music, volume);
-
-    is_music_playing = true;
 }

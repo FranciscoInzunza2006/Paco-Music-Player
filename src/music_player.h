@@ -32,7 +32,7 @@ const Track* musicPlayer_getCurrentTrack();
 
 void musicPlayer_toggleMusicPlaying();
 bool musicPlayer_isPlaying();
-bool musicPlayer_isPaused();
+//bool musicPlayer_isPaused();
 
 void musicPlayer_setProgress(float progress);
 float musicPlayer_getTimePlayed();
