@@ -27,6 +27,9 @@ void musicPlayer_cleanup();
 void musicPlayer_changeAlbum(size_t index);
 void musicPlayer_changeTrack(size_t index);
 
+void musicPlayer_previousTrack();
+void musicPlayer_nextTrack();
+
 const Album* musicPlayer_getCurrentAlbum();
 const Track* musicPlayer_getCurrentTrack();
 

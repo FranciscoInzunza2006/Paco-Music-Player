@@ -39,6 +39,18 @@ void musicPlayer_cleanup() {
     freeAlbumList(&albums, true);
 }
 
+void musicPlayer_toggleMusicPlaying() {
+    if (IsMusicStreamPlaying(music)) PauseMusicStream(music);
+    else ResumeMusicStream(music);
+}
+
+void musicPlayer_previousTrack() {
+    musicPlayer_changeTrack(current_track_index - 1);
+}
+void musicPlayer_nextTrack() {
+    musicPlayer_changeTrack(current_track_index + 1);
+}
+
 // Setters
 void musicPlayer_changeAlbum(const size_t index) {
     current_album_index = index;
@@ -49,6 +61,10 @@ void musicPlayer_changeAlbum(const size_t index) {
 
 void musicPlayer_changeTrack(const size_t index) {
     current_track_index = index;
+
+    const size_t current_album_tracks_count = albums.items[current_album_index].tracks.count;
+    if (current_track_index >= current_album_tracks_count) current_track_index = current_album_tracks_count - 1;
+
     changeMusic(musicPlayer_getCurrentTrack()->file_path);
 }
 
@@ -57,11 +73,6 @@ void musicPlayer_setProgress(float progress) {
     if (progress > 1.0f) progress = 1.0f;
 
     SeekMusicStream(music, progress * musicPlayer_getTimeLength());
-}
-
-void musicPlayer_toggleMusicPlaying() {
-    if (IsMusicStreamPlaying(music)) PauseMusicStream(music);
-    else ResumeMusicStream(music);
 }
 
 void musicPlayer_setVolume(const float new_volume) {
