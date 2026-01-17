@@ -10,10 +10,11 @@ constexpr char INTERFACE_WINDOW_DEFAULT_TITLE[] = "Paco's Music Player";
 constexpr int INTERFACE_TARGET_FPS = 60;
 
 typedef struct {
-    int listview_albumsScrollIndex;
-    int listview_albumsActive;
-    int listview_album_tracksScrollIndex;
-    int listview_album_tracksActive;
+    // Controls
+    int listview_albums_scroll_index;
+    int listview_albums_active;
+    int listview_tracks_scroll_index;
+    int listview_tracks_active;
 
     bool button_shuffle_pressed;
     bool button_previous_pressed;
@@ -21,8 +22,16 @@ typedef struct {
     bool button_play_pressed;
     bool button_stop_pressed;
 
-    float sliderbar_volumeValue;
-    float sliderbar_progressValue;
+    float sliderbar_volume_value;
+    float sliderbar_progress_value;
+    bool sliderbar_progress_value_changed;
+
+    // Other stuff
+    const char* album_name;
+    const char* track_name;
+
+    float time_played;
+    float time_length;
 } GuiLayoutState;
 
 GuiLayoutState interfaceInit();
