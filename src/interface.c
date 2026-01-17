@@ -58,16 +58,21 @@ static void processState(GuiLayoutState* state) {
         musicPlayer_setVolume(state->sliderbar_volume_value);
     }
 
+    if (state->sliderbar_progress_value_changed && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        // WARNING: This will cause issues if more... playback? (shuffle, loop album) added
+        if (state->sliderbar_progress_value == 1.0f) state->sliderbar_progress_value = 0.0f;
+
+        musicPlayer_setProgress(state->sliderbar_progress_value);
+        state->sliderbar_progress_value_changed = false;
+    }
     state->time_played = musicPlayer_getTimePlayed();
     state->time_length = musicPlayer_getTimeLength();
+
     // If not clicking bar: Update bar to correctly reflect the position in the music
     // If clicking bar: Wait until mouse is released to update position
     if (!state->sliderbar_progress_value_changed) {
         state->sliderbar_progress_value = state->time_played / state->time_length;
-    } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-        musicPlayer_setProgress(state->sliderbar_progress_value);
     }
-
 
     state->album_name = musicPlayer_getCurrentAlbum()->name;
     state->track_name = musicPlayer_getCurrentTrack()->title;
@@ -121,7 +126,6 @@ static void drawAndUpdateState(GuiLayoutState* state) {
 
     const float true_progress = state->time_played / state->time_length;
     state->sliderbar_progress_value_changed = true_progress != state->sliderbar_progress_value;
-    printf("%f = %f\n", true_progress, state->sliderbar_progress_value);
 
     // Track name
     GuiLabel((Rectangle){392, 400, 384, 32}, GuiIconText(ICON_FILETYPE_AUDIO, state->track_name));
