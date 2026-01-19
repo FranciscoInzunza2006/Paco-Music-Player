@@ -13,7 +13,7 @@
 // Music stream handling
 Music music = {0};
 //bool is_music_playing = false;
-float volume = 1.0f;
+float volume = 0.3f;
 bool music_has_changed = false;
 
 static void playMusic();

@@ -73,7 +73,6 @@ static void processState(GuiLayoutState* state) {
     }
 
     state->time_played = musicPlayer_getTimePlayed();
-    state->time_length = musicPlayer_getTimeLength();
 
     // If not clicking bar: Update bar to correctly reflect the position in the music
     // If clicking bar: Wait until mouse is released to update position
@@ -91,22 +90,23 @@ static void processState(GuiLayoutState* state) {
     const Track* track = musicPlayer_getCurrentTrack();
     if (track != nullptr) {
         if (state->track_name != track->title) {
+            const char* a = state->album_name;
             state->track_name = track->title;
             state->album_name = track->album;
             state->time_length = musicPlayer_getTimeLength();
-        }
-    }
 
-    // Update tracklist
-    const Album* album = musicPlayer_getCurrentAlbum();
-    if (album != nullptr && strcmp(state->album_name, album->name) != 0) {
-        if (state->tracklist_capacity < album->tracks.count) {
-            state->tracklist_capacity = album->tracks.count;
-            state->tracklist_str = malloc(state->tracklist_capacity * sizeof(char*));
-        }
+            // Update tracklist
+            const Album* album = musicPlayer_getCurrentAlbum();
+            if (album != nullptr && (state->tracklist_str == nullptr || strcmp(a, album->name) != 0)) {
+                if (state->tracklist_capacity < album->tracks.count) {
+                    state->tracklist_capacity = album->tracks.count;
+                    state->tracklist_str = malloc(state->tracklist_capacity * sizeof(char*));
+                }
 
-        for (size_t i = 0; i < album->tracks.count; i++) {
-            state->tracklist_str[i] = album->tracks.items[i].title;
+                for (size_t i = 0; i < album->tracks.count; i++) {
+                    state->tracklist_str[i] = album->tracks.items[i].title;
+                }
+            }
         }
     }
 
@@ -163,7 +163,7 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     // Time played bar
     const float time_played_bar = state->sliderbar_progress_value * state->time_length;
     GuiSliderBar((Rectangle){376, 376, 384, 16},
-                 formatToTime(time_played_bar), formatToTime(state->time_played),
+                 formatToTime(time_played_bar), formatToTime(state->time_length),
                  &state->sliderbar_progress_value, 0, 1);
     const float true_progress = state->time_played / state->time_length;
     state->sliderbar_progress_selected = true_progress != state->sliderbar_progress_value;
