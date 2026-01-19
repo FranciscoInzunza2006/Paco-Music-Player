@@ -18,6 +18,8 @@ GuiLayoutState interfaceInit() {
     GuiLayoutState state = {0};
 
     state.sliderbar_volume_value = musicPlayer_getVolume();
+    state.time_played = 0.0f;
+    state.time_length = 0.0f;
 
     InitWindow(INTERFACE_WINDOW_WIDTH, INTERFACE_WINDOW_HEIGHT, INTERFACE_WINDOW_DEFAULT_TITLE);
     InitAudioDevice();
@@ -65,17 +67,39 @@ static void processState(GuiLayoutState* state) {
         musicPlayer_setProgress(state->sliderbar_progress_value);
         state->sliderbar_progress_value_changed = false;
     }
+
     state->time_played = musicPlayer_getTimePlayed();
     state->time_length = musicPlayer_getTimeLength();
 
     // If not clicking bar: Update bar to correctly reflect the position in the music
     // If clicking bar: Wait until mouse is released to update position
     if (!state->sliderbar_progress_value_changed) {
-        state->sliderbar_progress_value = state->time_played / state->time_length;
+        if (state->time_length == 0.0f) state->sliderbar_progress_value = 0.0f;
+        else state->sliderbar_progress_value = state->time_played / state->time_length;
     }
 
-    state->album_name = musicPlayer_getCurrentAlbum()->name;
-    state->track_name = musicPlayer_getCurrentTrack()->title;
+    // Tracklist stuff
+    const Album* album = musicPlayer_getCurrentAlbum();
+    if (album != nullptr) {
+        if (state->tracklist_capacity < album->tracks.count) {
+            state->tracklist_capacity = album->tracks.count;
+            state->tracklist_str = realloc(state->tracklist_str, state->tracklist_capacity * sizeof(char*));
+        }
+
+        for (size_t i = 0; i < album->tracks.count; i++) {
+            state->tracklist_str[i] = album->tracks.items[i].title;
+        }
+
+        const Track* track = musicPlayer_getCurrentTrack();
+        if (track != nullptr) {
+            state->track_name = track->title;
+            state->album_name = track->album;
+            if (state->selected_track) {
+                //state->track_name = musicPlayer_getCurrentTrack()->title;
+                musicPlayer_changeTrack(state->listview_tracks_active);
+            }
+        }
+    }
 }
 
 static void drawAndUpdateState(GuiLayoutState* state) {
@@ -93,9 +117,11 @@ static void drawAndUpdateState(GuiLayoutState* state) {
                 &state->listview_albums_scroll_index, &state->listview_albums_active);
 
     // Album track selection
-    GuiListView((Rectangle){296, 24, 480, 280},
-                "ONE;TWO;THREE;",
-                &state->listview_tracks_scroll_index, &state->listview_tracks_active);
+    const int track_active = state->listview_tracks_active;
+    GuiListViewEx((Rectangle){296, 24, 480, 280},
+                  state->tracklist_str, state->tracklist_capacity - 1,
+                  &state->listview_tracks_scroll_index, &state->listview_tracks_active, nullptr);
+    state->selected_track = track_active != state->listview_tracks_active;
 
     // Controls
     state->button_shuffle_pressed = GuiButton((Rectangle){320, 320, 32, 32}, "#077#");

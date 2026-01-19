@@ -1,5 +1,6 @@
 #include "music_player.h"
 
+#include <math.h>
 #include <stddef.h>
 
 #include "raylib.h"
@@ -31,6 +32,7 @@ void musicPlayer_init(AlbumList album_list) {
 }
 
 void musicPlayer_update() {
+    //if (IsMusicValid(music))
     UpdateMusicStream(music);
 }
 
@@ -40,6 +42,11 @@ void musicPlayer_cleanup() {
 }
 
 void musicPlayer_toggleMusicPlaying() {
+    if (!IsMusicValid(music)) {
+        musicPlayer_changeTrack(current_track_index); // Force start
+        return;
+    }
+
     if (IsMusicStreamPlaying(music)) PauseMusicStream(music);
     else ResumeMusicStream(music);
 }
@@ -47,6 +54,7 @@ void musicPlayer_toggleMusicPlaying() {
 void musicPlayer_previousTrack() {
     musicPlayer_changeTrack(current_track_index - 1);
 }
+
 void musicPlayer_nextTrack() {
     musicPlayer_changeTrack(current_track_index + 1);
 }
@@ -72,6 +80,11 @@ void musicPlayer_setProgress(float progress) {
     if (progress < 0.0f) progress = 0.0f;
     if (progress > 1.0f) progress = 1.0f;
 
+    // Force start if not playing anything, may cause problems.
+    if (!IsMusicValid(music)) {
+        musicPlayer_changeTrack(current_track_index);
+    }
+
     SeekMusicStream(music, progress * musicPlayer_getTimeLength());
 }
 
@@ -81,12 +94,25 @@ void musicPlayer_setVolume(const float new_volume) {
 }
 
 // Getters
+static bool isValidAlbumList() {
+    return albums.items != nullptr && albums.count != 0 && albums.capacity != 0;
+}
+
+const AlbumList* musicPlayer_getAlbumList() {
+    return isValidAlbumList() ? &albums : nullptr;
+}
+
 const Album* musicPlayer_getCurrentAlbum() {
+    if (!isValidAlbumList()) return nullptr;
+
     return &albums.items[current_album_index];
 }
 
 const Track* musicPlayer_getCurrentTrack() {
-    return &musicPlayer_getCurrentAlbum()->tracks.items[current_track_index];
+    const Album* current_album = musicPlayer_getCurrentAlbum();
+    if (current_album == nullptr) return nullptr;
+
+    return &current_album->tracks.items[current_track_index];
 }
 
 bool musicPlayer_isPlaying() {
@@ -102,7 +128,8 @@ float musicPlayer_getTimePlayed() {
 }
 
 float musicPlayer_getTimeLength() {
-    return GetMusicTimeLength(music);
+    const float time_length = GetMusicTimeLength(music);
+    return !isnan(time_length) ? GetMusicTimeLength(music) : 0.0f;
 }
 
 float musicPlayer_getVolume() { return volume; }

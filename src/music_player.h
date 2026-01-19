@@ -30,6 +30,7 @@ void musicPlayer_changeTrack(size_t index);
 void musicPlayer_previousTrack();
 void musicPlayer_nextTrack();
 
+const AlbumList* musicPlayer_getAlbumList();
 const Album* musicPlayer_getCurrentAlbum();
 const Track* musicPlayer_getCurrentTrack();
 

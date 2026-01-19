@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <stddef.h>
 
 constexpr int INTERFACE_WINDOW_WIDTH = 800;
 constexpr int INTERFACE_WINDOW_HEIGHT = 450;
@@ -29,6 +30,10 @@ typedef struct {
     // Other stuff
     const char* album_name;
     const char* track_name;
+
+    bool selected_track;
+    const char** tracklist_str;
+    size_t tracklist_capacity;
 
     float time_played;
     float time_length;

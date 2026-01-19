@@ -13,8 +13,8 @@ TrackList getTracksFromPaths();
 int main(void) {
     TrackList all_tracks = getTracksFromPaths();
     GuiLayoutState state = interfaceInit();
+
     musicPlayer_init(organizeTracksIntoAlbums(&all_tracks));
-    musicPlayer_changeTrack(0);
     while (interfaceShouldUpdate()) {
         // Update
         musicPlayer_update();
