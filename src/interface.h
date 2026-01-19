@@ -16,6 +16,7 @@ typedef struct {
     int listview_albums_active;
     int listview_tracks_scroll_index;
     int listview_tracks_active;
+    bool listview_tracks_selected;
 
     bool button_shuffle_pressed;
     bool button_previous_pressed;
@@ -25,13 +26,15 @@ typedef struct {
 
     float sliderbar_volume_value;
     float sliderbar_progress_value;
-    bool sliderbar_progress_value_changed;
+    bool sliderbar_progress_selected;
 
     // Other stuff
     const char* album_name;
     const char* track_name;
 
-    bool selected_track;
+    const char** album_list_str;
+    size_t album_list_count;
+
     const char** tracklist_str;
     size_t tracklist_capacity;
 

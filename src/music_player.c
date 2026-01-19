@@ -1,8 +1,8 @@
 #include "music_player.h"
 
 #include <math.h>
-#include <stddef.h>
 
+// Goto config.h and uncomment search for SUPPORT_FILEFORMAT_FLAC
 #include "raylib.h"
 #include "tracks.h"
 
@@ -14,7 +14,9 @@
 Music music = {0};
 //bool is_music_playing = false;
 float volume = 1.0f;
+bool music_has_changed = false;
 
+static void playMusic();
 static void stopMusic();
 
 void changeMusic(const char* new_music_path);
@@ -26,14 +28,15 @@ size_t current_track_index = 0;
 
 void musicPlayer_init(AlbumList album_list) {
     albums = album_list;
-    current_album_index = 0;
-    current_track_index = 0;
-    stopMusic();
+    //current_album_index = 0;
+    //current_track_index = 0;
+    //stopMusic();
 }
 
 void musicPlayer_update() {
     //if (IsMusicValid(music))
     UpdateMusicStream(music);
+    music_has_changed = false;
 }
 
 void musicPlayer_cleanup() {
@@ -48,7 +51,7 @@ void musicPlayer_toggleMusicPlaying() {
     }
 
     if (IsMusicStreamPlaying(music)) PauseMusicStream(music);
-    else ResumeMusicStream(music);
+    else playMusic();
 }
 
 void musicPlayer_previousTrack() {
@@ -135,6 +138,10 @@ float musicPlayer_getTimeLength() {
 float musicPlayer_getVolume() { return volume; }
 
 // Music stream stuff
+static void playMusic() {
+    if (IsMusicValid(music)) ResumeMusicStream(music);
+    else musicPlayer_changeTrack(current_track_index); // Start current selected song, probably the index 0.
+}
 static void stopMusic() {
     UnloadMusicStream(music);
     music = (Music){0};
@@ -148,4 +155,5 @@ void changeMusic(const char* new_music_path) {
 
     PlayMusicStream(music);
     SetMusicVolume(music, volume);
+    music_has_changed = true;
 }

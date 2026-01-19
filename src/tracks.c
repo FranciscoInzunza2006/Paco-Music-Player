@@ -68,7 +68,10 @@ TrackList getTrackListFromDirectory(const char* path) {
     TrackList tracks = {0};
     assert(tracks.items == nullptr);
 
-    constexpr char VALID_FORMATS[] = ".mp3;.wav"; // TODO: Add ALL the valid formats, between taglib and raylib.
+    // Raylib compatible formats: WAV, OGG, MP3, FLAC, MOD, XM
+    // Taglib compatible formats: ID3v1 and ID3v2 for MP3 files, Ogg Vorbis comments and ID3 tags in
+    //                            FLAC, MPC, Speex, WavPack, TrueAudio, WAV, AIFF, MP4, APE, ASF, DSF, DFF and AAC
+    constexpr char VALID_FORMATS[] = ".mp3;.wav;.ogg;.flac";
     const FilePathList music_files = LoadDirectoryFilesEx(path, VALID_FORMATS, false);
     for (size_t file_path_index = 0; file_path_index < music_files.count; file_path_index++) {
         const char* file_path = music_files.paths[file_path_index];

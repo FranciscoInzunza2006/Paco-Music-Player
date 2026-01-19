@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include "tracks.h"
 
 #include "music_player.h"
@@ -7,14 +5,11 @@
 
 TrackList getTracksFromPaths();
 
-// static void ButtonShuffle() {
-// }
-
 int main(void) {
     TrackList all_tracks = getTracksFromPaths();
-    GuiLayoutState state = interfaceInit();
 
     musicPlayer_init(organizeTracksIntoAlbums(&all_tracks));
+    GuiLayoutState state = interfaceInit();
     while (interfaceShouldUpdate()) {
         // Update
         musicPlayer_update();
@@ -32,12 +27,13 @@ int main(void) {
 }
 
 TrackList getTracksFromPaths() {
+    //return (TrackList){0};
     const char* MUSIC_DIRECTORIES_PATH[] = {
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
-        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
+        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
-        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
         //"D:\\Musica\\OFF",
         //"D:\\Musica\\Ribbit",
     };
