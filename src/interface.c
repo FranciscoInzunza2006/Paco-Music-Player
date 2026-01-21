@@ -10,6 +10,11 @@
 #include "raylib.h"
 #include "music_player.h"
 
+// static void callbackToggleButton();
+// static void callbackNextButton();
+// static void callbackPreviousButton();
+// static void
+
 static void processState(GuiLayoutState* state);
 
 static void drawAndUpdateState(GuiLayoutState* state);
@@ -24,6 +29,15 @@ GuiLayoutState interfaceInit() {
     state.sliderbar_volume_value = musicPlayer_getVolume();
     state.time_played = 0.0f;
     state.time_length = 0.0f;
+
+    const Playlists* album_list = musicPlayer_getAlbumList();
+    if (album_list != nullptr) {
+        state.album_list_str = malloc(sizeof(char*) * album_list->count);
+        state.album_list_count = album_list->count;
+        for (size_t i = 0; i < album_list->count; i++) {
+            state.album_list_str[i] = album_list->items[i].name;
+        }
+    }
 
     InitWindow(INTERFACE_WINDOW_WIDTH, INTERFACE_WINDOW_HEIGHT, INTERFACE_WINDOW_DEFAULT_TITLE);
     InitAudioDevice();
@@ -50,7 +64,8 @@ void interfaceCleanUp() {
 
 static void processState(GuiLayoutState* state) {
     if (state->button_play_pressed) {
-        musicPlayer_toggleMusicPlaying();
+        if (musicPlayer_isPlaying()) musicPlayer_pause();
+        else musicPlayer_play();
     }
 
     if (state->button_previous_pressed) {
@@ -62,6 +77,34 @@ static void processState(GuiLayoutState* state) {
 
     if (state->sliderbar_volume_value != musicPlayer_getVolume()) {
         musicPlayer_setVolume(state->sliderbar_volume_value);
+    }
+
+    // Change track
+    if (state->listview_tracks_selected) {
+        musicPlayer_changeTrack(state->listview_tracks_active);
+        state->sliderbar_progress_value = 0.0f;
+    }
+
+    // Update track info
+    const Track* track = musicPlayer_getCurrentTrack();
+    if (track != nullptr && (state->track_name != track->title)) {
+        const char* a = state->album_name;
+        state->track_name = track->title;
+        state->album_name = track->album;
+        state->time_length = musicPlayer_getTimeLength();
+
+        // Update tracklist
+        const Playlist* album = musicPlayer_getCurrentAlbum();
+        if (album != nullptr && (state->tracklist_str == nullptr || strcmp(a, album->name) != 0)) {
+            if (state->tracklist_capacity < album->tracks.count) {
+                state->tracklist_capacity = album->tracks.count;
+                state->tracklist_str = malloc(state->tracklist_capacity * sizeof(char*));
+            }
+
+            for (size_t i = 0; i < album->tracks.count; i++) {
+                state->tracklist_str[i] = album->tracks.items[i].title;
+            }
+        }
     }
 
     if (state->sliderbar_progress_selected && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -79,44 +122,6 @@ static void processState(GuiLayoutState* state) {
     if (!state->sliderbar_progress_selected) {
         if (state->time_length == 0.0f) state->sliderbar_progress_value = 0.0f;
         else state->sliderbar_progress_value = state->time_played / state->time_length;
-    }
-
-    // Change track
-    if (state->listview_tracks_selected) {
-        musicPlayer_changeTrack(state->listview_tracks_active);
-    }
-
-    // Update track info
-    const Track* track = musicPlayer_getCurrentTrack();
-    if (track != nullptr) {
-        if (state->track_name != track->title) {
-            const char* a = state->album_name;
-            state->track_name = track->title;
-            state->album_name = track->album;
-            state->time_length = musicPlayer_getTimeLength();
-
-            // Update tracklist
-            const Playlist* album = musicPlayer_getCurrentAlbum();
-            if (album != nullptr && (state->tracklist_str == nullptr || strcmp(a, album->name) != 0)) {
-                if (state->tracklist_capacity < album->tracks.count) {
-                    state->tracklist_capacity = album->tracks.count;
-                    state->tracklist_str = malloc(state->tracklist_capacity * sizeof(char*));
-                }
-
-                for (size_t i = 0; i < album->tracks.count; i++) {
-                    state->tracklist_str[i] = album->tracks.items[i].title;
-                }
-            }
-        }
-    }
-
-    const Playlists* album_list = musicPlayer_getAlbumList();
-    if (album_list != nullptr && state->album_list_str == nullptr) {
-        state->album_list_str = malloc(sizeof(char*) * album_list->count);
-        state->album_list_count = album_list->count;
-        for (size_t i = 0; i < album_list->count; i++) {
-            state->album_list_str[i] = album_list->items[i].name;
-        }
     }
 }
 
@@ -165,7 +170,7 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     GuiSliderBar((Rectangle){376, 376, 384, 16},
                  formatToTime(time_played_bar), formatToTime(state->time_length),
                  &state->sliderbar_progress_value, 0, 1);
-    const float true_progress = state->time_played / state->time_length;
+    const float true_progress = state->time_length != 0.0f ? state->time_played / state->time_length : 0.0f;
     state->sliderbar_progress_selected = true_progress != state->sliderbar_progress_value;
 
     // Track name

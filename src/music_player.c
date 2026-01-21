@@ -129,7 +129,7 @@ const Track* musicPlayer_getCurrentTrack() {
     const Playlist* current_album = musicPlayer_getCurrentAlbum();
     if (current_album == nullptr) return nullptr;
 
-    if (current_album->tracks.count >= current_track_index) return nullptr;
+    if (current_track_index >= current_album->tracks.count) return nullptr;
     return &current_album->tracks.items[current_track_index];
 }
 

@@ -23,6 +23,9 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
         set(FETCHCONTENT_QUIET NO)
 
         FetchContent_MakeAvailable(raylib)
+        target_compile_definitions(raylib
+                PRIVATE SUPPORT_FILEFORMAT_FLAC=1
+        )
     endif ()
 endif ()
 

@@ -10,6 +10,8 @@ int main(void) {
 
     musicPlayer_init(organizeTracksIntoPlaylists(&all_tracks));
     GuiLayoutState state = interfaceInit();
+
+    musicPlayer_play();
     while (interfaceShouldUpdate()) {
         // Update
         musicPlayer_update();
@@ -38,7 +40,6 @@ Tracks getTracksFromPaths() {
         //"D:\\Musica\\Ribbit",
     };
     //constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
-
 
     const char* music_directory_path = MUSIC_DIRECTORIES_PATH[0];
     return getTracksFromDirectory(music_directory_path);
