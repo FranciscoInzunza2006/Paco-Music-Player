@@ -6,22 +6,30 @@
 #include "raylib.h"
 #include "tracks.h"
 
-//Album* current_album = nullptr;
-//Track* playing_track = nullptr;
-//size_t playing_track_index = 0;
-
-// Music stream handling
+//region Music stream handling
 Music music = {0};
-//bool is_music_playing = false;
 float volume = 0.3f;
-bool music_has_changed = false;
 
-static void playMusic();
-static void stopMusic();
+// Music stream stuff
+static void stopMusic() {
+    UnloadMusicStream(music);
+    music = (Music){0};
+}
 
-void changeMusic(const char* new_music_path);
+static bool changeMusic(const char* music_file_path) {
+    UnloadMusicStream(music);
 
-// Music Player
+    music = LoadMusicStream(music_file_path);
+    if (!IsMusicValid(music)) return false;
+
+    PlayMusicStream(music);
+    SetMusicVolume(music, volume);
+
+    return true;
+}
+//endregion
+
+//region Music Player
 Playlists albums = {0};
 size_t current_album_index = 0;
 size_t current_track_index = 0;
@@ -34,25 +42,31 @@ void musicPlayer_init(Playlists album_list) {
 }
 
 void musicPlayer_update() {
-    //if (IsMusicValid(music))
     UpdateMusicStream(music);
-    music_has_changed = false;
 }
 
 void musicPlayer_cleanup() {
     stopMusic();
-    freeAlbumList(&albums, true);
 }
 
-void musicPlayer_toggleMusicPlaying() {
+bool musicPlayer_play() {
     if (!IsMusicValid(music)) {
-        musicPlayer_changeTrack(current_track_index); // Force start
-        return;
+        const Track* track = musicPlayer_getCurrentTrack();
+        if (track == nullptr) return false;
+        if (!changeMusic(track->file_path)) return false;
     }
 
-    if (IsMusicStreamPlaying(music)) PauseMusicStream(music);
-    else playMusic();
+    ResumeMusicStream(music);
+    return true;
 }
+void musicPlayer_pause() {
+    PauseMusicStream(music);
+}
+
+// void musicPlayer_toggle() {
+//     if (IsMusicStreamPlaying(music)) musicPlayer_pause();
+//     else musicPlayer_play();
+// }
 
 void musicPlayer_previousTrack() {
     musicPlayer_changeTrack(current_track_index - 1);
@@ -83,9 +97,8 @@ void musicPlayer_setProgress(float progress) {
     if (progress < 0.0f) progress = 0.0f;
     if (progress > 1.0f) progress = 1.0f;
 
-    // Force start if not playing anything, may cause problems.
-    if (!IsMusicValid(music)) {
-        musicPlayer_changeTrack(current_track_index);
+    if (!musicPlayer_isPlaying()) {
+        if (!musicPlayer_play()) return;
     }
 
     SeekMusicStream(music, progress * musicPlayer_getTimeLength());
@@ -108,6 +121,7 @@ const Playlists* musicPlayer_getAlbumList() {
 const Playlist* musicPlayer_getCurrentAlbum() {
     if (!isValidAlbumList()) return nullptr;
 
+    if (current_album_index >= albums.count) return nullptr;
     return &albums.items[current_album_index];
 }
 
@@ -115,6 +129,7 @@ const Track* musicPlayer_getCurrentTrack() {
     const Playlist* current_album = musicPlayer_getCurrentAlbum();
     if (current_album == nullptr) return nullptr;
 
+    if (current_album->tracks.count >= current_track_index) return nullptr;
     return &current_album->tracks.items[current_track_index];
 }
 
@@ -122,38 +137,15 @@ bool musicPlayer_isPlaying() {
     return IsMusicStreamPlaying(music);
 }
 
-// bool musicPlayer_isPaused() {
-//     return !IsMusicStreamPlaying(music);
-// }
-
 float musicPlayer_getTimePlayed() {
     return GetMusicTimePlayed(music);
 }
 
 float musicPlayer_getTimeLength() {
     const float time_length = GetMusicTimeLength(music);
-    return !isnan(time_length) ? GetMusicTimeLength(music) : 0.0f;
+    return !isnan(time_length) ? time_length : 0.0f;
 }
 
 float musicPlayer_getVolume() { return volume; }
 
-// Music stream stuff
-static void playMusic() {
-    if (IsMusicValid(music)) ResumeMusicStream(music);
-    else musicPlayer_changeTrack(current_track_index); // Start current selected song, probably the index 0.
-}
-static void stopMusic() {
-    UnloadMusicStream(music);
-    music = (Music){0};
-}
-
-void changeMusic(const char* new_music_path) {
-    UnloadMusicStream(music);
-
-    music = LoadMusicStream(new_music_path);
-    if (!IsMusicValid(music)) return;
-
-    PlayMusicStream(music);
-    SetMusicVolume(music, volume);
-    music_has_changed = true;
-}
+//endregion
