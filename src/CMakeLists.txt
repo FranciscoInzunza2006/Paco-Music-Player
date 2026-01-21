@@ -11,6 +11,7 @@ target_link_libraries(Tracks
 )
 target_include_directories(Tracks
         PRIVATE ${taglib_SOURCE_DIR}/bindings/c
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_library(MusicPlayer STATIC music_player.h music_player.c)

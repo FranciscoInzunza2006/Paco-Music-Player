@@ -45,5 +45,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(taglib)
 
+#GTest
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 add_subdirectory(src)
+
+enable_testing()
+add_subdirectory(test)
+
 
