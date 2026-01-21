@@ -4,7 +4,6 @@
 
 #include "tracks.h"
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,21 +35,18 @@ bool getTrackWithMetadataFromFile(const char* path, Track* output) {
 
     output->file_path = copyString(path);
 
-    output->title = copyString(taglib_tag_title(tag));
-    output->artist = copyString(taglib_tag_artist(tag));
-    output->album = copyString(taglib_tag_album(tag));
-    output->comment = copyString(taglib_tag_comment(tag));
-    output->genre = copyString(taglib_tag_genre(tag));
-    output->track_number = taglib_tag_track(tag);
+    taglib_set_string_management_enabled(false);
+    output->title = taglib_tag_title(tag);
+    if (strcmp(output->title, "") == 0) output->title = copyString(GetFileNameWithoutExt(path));
 
-    if (strcmp(output->title, "") == 0) {
-        output->title = copyString(GetFileNameWithoutExt(path));
-    }
+    output->artist = taglib_tag_artist(tag);
+    output->album = taglib_tag_album(tag);
+    output->comment = taglib_tag_comment(tag);
+    output->genre = taglib_tag_genre(tag);
+    output->track_number = taglib_tag_track(tag);
 
 cleanup:
     taglib_file_free(file);
-    taglib_tag_free_strings();
-
     return success;
 }
 
@@ -63,10 +59,8 @@ void freeTrack(const Track* track) {
     free(track->genre);
 }
 
-// Tracklist
-TrackList getTrackListFromDirectory(const char* path) {
-    TrackList tracks = {0};
-    assert(tracks.items == nullptr);
+Tracks getTracksFromDirectory(const char* path) {
+    Tracks tracks = {0};
 
     // Raylib compatible formats: WAV, OGG, MP3, FLAC, MOD, XM
     // Taglib compatible formats: ID3v1 and ID3v2 for MP3 files, Ogg Vorbis comments and ID3 tags in
@@ -87,29 +81,24 @@ TrackList getTrackListFromDirectory(const char* path) {
     return tracks;
 }
 
-void freeTrackList(const TrackList* tracks) {
-    for (size_t i = 0; i < tracks->count; i++) freeTrack(&tracks->items[i]);
-    free(tracks->items);
-}
-
-// Album
-AlbumList organizeTracksIntoAlbums(const TrackList* tracks) {
-    AlbumList albums = {0};
+// Playlist
+Playlists organizeTracksIntoPlaylists(const Tracks* tracks) {
+    Playlists albums = {0};
 
     for (size_t track_index = 0; track_index < tracks->count; track_index++) {
         Track* track = &tracks->items[track_index];
 
         for (size_t i = 0; i < albums.count; i++) {
-            Album* album = &albums.items[i];
+            Playlist* album = &albums.items[i];
             if (strcmp(track->album, album->name) == 0) {
                 DYNAMIC_ARRAY_APPEND(album->tracks, *track);
                 goto next_track;
             }
         }
 
-        Album new_album = {
+        Playlist new_album = {
             .name = copyString(track->album),
-            .tracks = (TrackList){0}
+            .tracks = (Tracks){0}
         };
         DYNAMIC_ARRAY_APPEND(new_album.tracks, *track);
         DYNAMIC_ARRAY_APPEND(albums, new_album);
@@ -118,16 +107,8 @@ AlbumList organizeTracksIntoAlbums(const TrackList* tracks) {
     return albums;
 }
 
-void freeAlbum(const Album* album, const bool free_tracks) {
+void freePlaylist(const Playlist* album) {
     free(album->name);
-    if (free_tracks) freeTrackList(&album->tracks);
-}
-
-void freeAlbumList(const AlbumList* albums, const bool free_tracks) {
-    for (size_t album_index = 0; album_index < albums->count; album_index++) {
-        freeAlbum(&albums->items[album_index], free_tracks);
-    }
-    free(albums->items);
 }
 
 // Utils

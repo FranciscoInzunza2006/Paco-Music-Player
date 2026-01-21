@@ -96,7 +96,7 @@ static void processState(GuiLayoutState* state) {
             state->time_length = musicPlayer_getTimeLength();
 
             // Update tracklist
-            const Album* album = musicPlayer_getCurrentAlbum();
+            const Playlist* album = musicPlayer_getCurrentAlbum();
             if (album != nullptr && (state->tracklist_str == nullptr || strcmp(a, album->name) != 0)) {
                 if (state->tracklist_capacity < album->tracks.count) {
                     state->tracklist_capacity = album->tracks.count;
@@ -110,7 +110,7 @@ static void processState(GuiLayoutState* state) {
         }
     }
 
-    const AlbumList* album_list = musicPlayer_getAlbumList();
+    const Playlists* album_list = musicPlayer_getAlbumList();
     if (album_list != nullptr && state->album_list_str == nullptr) {
         state->album_list_str = malloc(sizeof(char*) * album_list->count);
         state->album_list_count = album_list->count;

@@ -22,29 +22,25 @@ typedef struct {
     Track* items;
     size_t count;
     size_t capacity;
-} TrackList;
+} Tracks;
 
 typedef struct {
     char* name;
-    TrackList tracks;
-} Album;
+    Tracks tracks;
+} Playlist;
 
 typedef struct {
-    Album* items;
+    Playlist* items;
     size_t count;
     size_t capacity;
-} AlbumList;
+} Playlists;
 
 bool getTrackWithMetadataFromFile(const char* path, Track* output);
 
 void freeTrack(const Track* track);
 
-void freeTrackList(const TrackList* tracks);
+void freePlaylist(const Playlist* album);
 
-void freeAlbum(const Album* album, bool free_tracks);
+Playlists organizeTracksIntoPlaylists(const Tracks* tracks);
 
-void freeAlbumList(const AlbumList* albums, bool free_tracks);
-
-AlbumList organizeTracksIntoAlbums(const TrackList* tracks);
-
-TrackList getTrackListFromDirectory(const char* path);
+Tracks getTracksFromDirectory(const char* path);

@@ -19,7 +19,7 @@
 // bool musicPlayer_isMusicPlaying();
 // bool musicPlayer_isMusicPaused();w
 
-void musicPlayer_init(AlbumList album_list);
+void musicPlayer_init(Playlists album_list);
 void musicPlayer_update();
 void musicPlayer_cleanup();
 
@@ -29,8 +29,8 @@ void musicPlayer_changeTrack(size_t index);
 void musicPlayer_previousTrack();
 void musicPlayer_nextTrack();
 
-const AlbumList* musicPlayer_getAlbumList();
-const Album* musicPlayer_getCurrentAlbum();
+const Playlists* musicPlayer_getAlbumList();
+const Playlist* musicPlayer_getCurrentAlbum();
 const Track* musicPlayer_getCurrentTrack();
 
 void musicPlayer_toggleMusicPlaying();
