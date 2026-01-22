@@ -6,6 +6,12 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+
+#endif
+
+
 typedef struct {
     char* file_path;
 
@@ -44,3 +50,7 @@ void freePlaylist(const Playlist* album);
 Playlists organizeTracksIntoPlaylists(const Tracks* tracks);
 
 Tracks getTracksFromDirectory(const char* path);
+
+#ifdef __cplusplus
+}
+#endif
