@@ -20,7 +20,7 @@ static const char* formatToTime(float time_in_seconds) {
 
 static void createTrackListviewValues(ListviewValues* out, const Album* album) {
     out->names = malloc(sizeof(char*) * album->tracks.count);
-    out->count = (int)album->tracks.count;
+    out->count = (int) album->tracks.count;
     for (size_t track_index = 0; track_index < album->tracks.count; track_index++) {
         out->names[track_index] = album->tracks.items[track_index].title;
     }
@@ -30,7 +30,7 @@ static void createAlbumListviewValues(GuiLayoutState* state) {
     const Albums* album_list = musicPlayer_getAlbumList();
     if (album_list != nullptr) {
         state->listview_albums_values.names = malloc(sizeof(char*) * album_list->count);
-        state->listview_albums_values.count = (int)album_list->count;
+        state->listview_albums_values.count = (int) album_list->count;
 
         state->listview_tracks_values = malloc(album_list->count * sizeof(ListviewValues));
         for (size_t album_index = 0; album_index < album_list->count; album_index++) {
@@ -93,6 +93,7 @@ static void processState(GuiLayoutState* state) {
 
     // Change track
     if (state->listview_tracks_selected) {
+        musicPlayer_changeAlbum(state->listview_albums_active);
         musicPlayer_changeTrack(state->listview_tracks_active);
         state->sliderbar_progress_value = 0.0f;
     }
@@ -100,23 +101,9 @@ static void processState(GuiLayoutState* state) {
     // Update track info
     const Track* track = musicPlayer_getCurrentTrack();
     if (track != nullptr && (state->track_name != track->title)) {
-        //const char* a = state->album_name;
         state->track_name = track->title;
         state->album_name = track->album;
         state->time_length = musicPlayer_getTimeLength();
-
-        // Update tracklist
-        // const Album* album = musicPlayer_getCurrentAlbum();
-        // if (album != nullptr && (state->tracklist_str == nullptr || strcmp(a, album->name) != 0)) {
-        //     if (state->foo_count < album->tracks.count) {
-        //         state->foo_count = album->tracks.count;
-        //         state->tracklist_str = malloc(state->foo_count * sizeof(char*));
-        //     }
-        //
-        //     for (size_t i = 0; i < album->tracks.count; i++) {
-        //         state->tracklist_str[i] = album->tracks.items[i].title;
-        //     }
-        // }
     }
 
     if (state->sliderbar_progress_selected && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -147,21 +134,31 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     GuiLabel((Rectangle){24, 280, 256, 32}, state->album_name);
 
     // Album selection
-    //int x = state->listview_albums_active;
     GuiListViewEx((Rectangle){24, 312, 256, 120},
-                state->listview_albums_values.names, state->listview_albums_values.count,
-                &state->listview_albums_scroll_index, &state->listview_albums_active, nullptr);
-    // if (x != state->listview_albums_active) {
-    //     musicPlayer_changeAlbum(state->listview_albums_active);
-    // }
+                  state->listview_albums_values.names, state->listview_albums_values.count,
+                  &state->listview_albums_scroll_index, &state->listview_albums_active, nullptr);
 
     // Tracklist
     const ListviewValues tracklist_titles = state->listview_tracks_values[state->listview_albums_active];
-    const int track_active = state->listview_tracks_active;
+
+    // DIRTY HACK
+    static int hacky_index = 0;
+
+    const bool looking_same_album = strcmp(musicPlayer_getCurrentAlbum()->name,
+                                           state->listview_albums_values.names[state->listview_albums_active]) == 0;
+    int active = looking_same_album ? state->listview_tracks_active : -1;
+    int* scroll = looking_same_album ? &state->listview_tracks_scroll_index : &hacky_index;
+    const int x = active;
     GuiListViewEx((Rectangle){296, 24, 480, 280},
                   tracklist_titles.names, tracklist_titles.count,
-                  &state->listview_tracks_scroll_index, &state->listview_tracks_active, nullptr);
-    state->listview_tracks_selected = track_active != state->listview_tracks_active;
+                  scroll, &active, nullptr);
+    state->listview_tracks_selected = active != x;
+    if (state->listview_tracks_selected) {
+        state->listview_tracks_active = active;
+        state->listview_tracks_scroll_index = *scroll;
+        hacky_index = 0;
+    }
+
 
     // Controls
     state->button_shuffle_pressed = GuiButton((Rectangle){320, 320, 32, 32}, "#077#");

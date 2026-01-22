@@ -105,6 +105,9 @@ void musicPlayer_changeAlbum(const size_t index) {
     current_album_index = index;
     current_track_index = -1;
 
+    const size_t albums_count = albums.count;
+    if (current_album_index >= albums_count) current_track_index = albums_count - 1;
+
     stopMusic();
 }
 
