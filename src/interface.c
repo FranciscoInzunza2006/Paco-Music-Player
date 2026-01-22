@@ -10,17 +10,36 @@
 #include "raylib.h"
 #include "music_player.h"
 
-// static void callbackToggleButton();
-// static void callbackNextButton();
-// static void callbackPreviousButton();
-// static void
-
 static void processState(GuiLayoutState* state);
 
 static void drawAndUpdateState(GuiLayoutState* state);
 
 static const char* formatToTime(float time_in_seconds) {
     return TextFormat("%02d:%02d", (int) (time_in_seconds / 60.0f), (int) time_in_seconds % 60);
+}
+
+static void createTrackListviewValues(ListviewValues* out, const Album* album) {
+    out->names = malloc(sizeof(char*) * album->tracks.count);
+    out->count = (int)album->tracks.count;
+    for (size_t track_index = 0; track_index < album->tracks.count; track_index++) {
+        out->names[track_index] = album->tracks.items[track_index].title;
+    }
+}
+
+static void createAlbumListviewValues(GuiLayoutState* state) {
+    const Albums* album_list = musicPlayer_getAlbumList();
+    if (album_list != nullptr) {
+        state->listview_albums_values.names = malloc(sizeof(char*) * album_list->count);
+        state->listview_albums_values.count = (int)album_list->count;
+
+        state->listview_tracks_values = malloc(album_list->count * sizeof(ListviewValues));
+        for (size_t album_index = 0; album_index < album_list->count; album_index++) {
+            const Album* album = &album_list->items[album_index];
+            state->listview_albums_values.names[album_index] = album->name;
+
+            createTrackListviewValues(&state->listview_tracks_values[album_index], album);
+        }
+    }
 }
 
 GuiLayoutState interfaceInit() {
@@ -30,24 +49,7 @@ GuiLayoutState interfaceInit() {
     state.time_played = 0.0f;
     state.time_length = 0.0f;
 
-    const Albums* album_list = musicPlayer_getAlbumList();
-    if (album_list != nullptr) {
-        state.listview_albums_values.names = malloc(sizeof(char*) * album_list->count);
-        state.listview_albums_values.count = (int)album_list->count;
-
-        state.listview_tracks_values = malloc(album_list->count * sizeof(ListviewValues));
-        for (size_t album_index = 0; album_index < album_list->count; album_index++) {
-            const Album* album = &album_list->items[album_index];
-            state.listview_albums_values.names[album_index] = album->name;
-
-            ListviewValues* vals = &state.listview_tracks_values[album_index];
-            vals->names = malloc(sizeof(char*) * album->tracks.count);
-            vals->count = (int)album->tracks.count;
-            for (size_t track_index = 0; track_index < album->tracks.count; track_index++) {
-                vals->names[track_index] = album->tracks.items[track_index].title;
-            }
-        }
-    }
+    createAlbumListviewValues(&state);
 
     InitWindow(INTERFACE_WINDOW_WIDTH, INTERFACE_WINDOW_HEIGHT, INTERFACE_WINDOW_DEFAULT_TITLE);
     InitAudioDevice();
