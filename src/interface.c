@@ -134,9 +134,11 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     GuiLabel((Rectangle){24, 280, 256, 32}, state->album_name);
 
     // Album selection
+    int album_active = state->listview_albums_active;
     GuiListViewEx((Rectangle){24, 312, 256, 120},
                   state->listview_albums_values.names, state->listview_albums_values.count,
-                  &state->listview_albums_scroll_index, &state->listview_albums_active, nullptr);
+                  &state->listview_albums_scroll_index, &album_active, nullptr);
+    if (album_active != -1) state->listview_albums_active = album_active;
 
     // Tracklist
     const ListviewValues tracklist_titles = state->listview_tracks_values[state->listview_albums_active];
