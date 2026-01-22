@@ -3,6 +3,10 @@
 #include <math.h>
 
 // Goto config.h and uncomment search for SUPPORT_FILEFORMAT_FLAC
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "dynamic_array.h"
 #include "raylib.h"
 #include "tracks.h"
 
@@ -30,12 +34,32 @@ static bool changeMusic(const char* music_file_path) {
 //endregion
 
 //region Music Player
+Tracks all_tracks = {0};
 Albums albums = {0};
 size_t current_album_index = 0;
 size_t current_track_index = 0;
 
-void musicPlayer_init(Albums album_list) {
-    albums = album_list;
+static void getTracksFromDirectories(const char** music_directories, size_t music_directories_count) {
+    for (size_t i = 0; i < music_directories_count; ++i) {
+        const char* music_directory = music_directories[i];
+
+        Tracks tracks = getTracksFromDirectory(music_directory);
+        if (tracks.count == 0) {
+            printf("Not valid music files in \"%s\"", music_directory);
+            continue;
+        }
+
+        for (size_t j = 0; j < tracks.count; ++j) {
+            DYNAMIC_ARRAY_APPEND(all_tracks, tracks.items[j]);
+        }
+    }
+}
+
+void musicPlayer_init(const char** music_directories, const size_t music_directories_count){
+    getTracksFromDirectories(music_directories, music_directories_count);
+    albums = organizeTracksIntoAlbums(&all_tracks);
+
+    //albums = album_list;
     //current_album_index = 0;
     //current_track_index = 0;
     //stopMusic();

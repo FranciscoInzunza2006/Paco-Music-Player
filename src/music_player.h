@@ -4,7 +4,7 @@
 
 #include "tracks.h"
 
-void musicPlayer_init(Albums album_list);
+void musicPlayer_init(const char** music_directories, size_t music_directories_count);
 void musicPlayer_update();
 void musicPlayer_cleanup();
 

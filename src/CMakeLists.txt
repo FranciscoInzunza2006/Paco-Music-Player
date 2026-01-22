@@ -15,7 +15,10 @@ target_include_directories(Tracks
 )
 
 add_library(MusicPlayer STATIC music_player.h music_player.c)
-target_link_libraries(MusicPlayer PRIVATE raylib)
+target_link_libraries(MusicPlayer
+        PRIVATE Tracks
+        PRIVATE raylib
+)
 
 add_library(GUI STATIC interface.c interface.h)
 target_link_libraries(GUI

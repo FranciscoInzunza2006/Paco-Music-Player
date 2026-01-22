@@ -137,7 +137,7 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     // Album selection
     int x = state->listview_albums_active;
     GuiListViewEx((Rectangle){24, 312, 256, 120},
-                state->album_list_str, (int)state->album_list_count-1,
+                state->album_list_str, (int)state->album_list_count,
                 &state->listview_albums_scroll_index, &state->listview_albums_active, nullptr);
     if (x != state->listview_albums_active) {
         musicPlayer_changeAlbum(state->listview_albums_active);
@@ -146,7 +146,7 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     // Tracklist
     const int track_active = state->listview_tracks_active;
     GuiListViewEx((Rectangle){296, 24, 480, 280},
-                  state->tracklist_str, (int)state->tracklist_capacity - 1,
+                  state->tracklist_str, (int)state->tracklist_capacity,
                   &state->listview_tracks_scroll_index, &state->listview_tracks_active, nullptr);
     state->listview_tracks_selected = track_active != state->listview_tracks_active;
 
