@@ -37,7 +37,8 @@ bool getTrackWithMetadataFromFile(const char* path, Track* output) {
 
     taglib_set_string_management_enabled(false);
     output->title = taglib_tag_title(tag);
-    if (strcmp(output->title, "") == 0) output->title = copyString(GetFileNameWithoutExt(path));
+    if (strcmp(output->title, "") == 0)
+        output->title = copyString(GetFileNameWithoutExt(path));
 
     output->artist = taglib_tag_artist(tag);
     output->album = taglib_tag_album(tag);
@@ -82,21 +83,21 @@ Tracks getTracksFromDirectory(const char* path) {
 }
 
 // Playlist
-Playlists organizeTracksIntoPlaylists(const Tracks* tracks) {
-    Playlists albums = {0};
+Albums organizeTracksIntoAlbums(const Tracks* tracks) {
+    Albums albums = {0};
 
     for (size_t track_index = 0; track_index < tracks->count; track_index++) {
         Track* track = &tracks->items[track_index];
 
         for (size_t i = 0; i < albums.count; i++) {
-            Playlist* album = &albums.items[i];
+            Album* album = &albums.items[i];
             if (strcmp(track->album, album->name) == 0) {
                 DYNAMIC_ARRAY_APPEND(album->tracks, *track);
                 goto next_track;
             }
         }
 
-        Playlist new_album = {
+        Album new_album = {
             .name = copyString(track->album),
             .tracks = (Tracks){0}
         };
@@ -107,7 +108,7 @@ Playlists organizeTracksIntoPlaylists(const Tracks* tracks) {
     return albums;
 }
 
-void freePlaylist(const Playlist* album) {
+void freeAlbum(const Album* album) {
     free(album->name);
 }
 

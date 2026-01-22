@@ -8,7 +8,7 @@ Tracks getTracksFromPaths();
 int main(void) {
     Tracks all_tracks = getTracksFromPaths();
 
-    musicPlayer_init(organizeTracksIntoPlaylists(&all_tracks));
+    musicPlayer_init(organizeTracksIntoAlbums(&all_tracks));
     GuiLayoutState state = interfaceInit();
 
     musicPlayer_play();

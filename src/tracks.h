@@ -33,21 +33,21 @@ typedef struct {
 typedef struct {
     char* name;
     Tracks tracks;
-} Playlist;
+} Album;
 
 typedef struct {
-    Playlist* items;
+    Album* items;
     size_t count;
     size_t capacity;
-} Playlists;
+} Albums;
 
 bool getTrackWithMetadataFromFile(const char* path, Track* output);
 
 void freeTrack(const Track* track);
 
-void freePlaylist(const Playlist* album);
+void freeAlbum(const Album* album);
 
-Playlists organizeTracksIntoPlaylists(const Tracks* tracks);
+Albums organizeTracksIntoAlbums(const Tracks* tracks);
 
 Tracks getTracksFromDirectory(const char* path);
 

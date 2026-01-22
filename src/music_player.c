@@ -30,11 +30,11 @@ static bool changeMusic(const char* music_file_path) {
 //endregion
 
 //region Music Player
-Playlists albums = {0};
+Albums albums = {0};
 size_t current_album_index = 0;
 size_t current_track_index = 0;
 
-void musicPlayer_init(Playlists album_list) {
+void musicPlayer_init(Albums album_list) {
     albums = album_list;
     //current_album_index = 0;
     //current_track_index = 0;
@@ -114,11 +114,11 @@ static bool isValidAlbumList() {
     return albums.items != nullptr && albums.count != 0 && albums.capacity != 0;
 }
 
-const Playlists* musicPlayer_getAlbumList() {
+const Albums* musicPlayer_getAlbumList() {
     return isValidAlbumList() ? &albums : nullptr;
 }
 
-const Playlist* musicPlayer_getCurrentAlbum() {
+const Album* musicPlayer_getCurrentAlbum() {
     if (!isValidAlbumList()) return nullptr;
 
     if (current_album_index >= albums.count) return nullptr;
@@ -126,7 +126,7 @@ const Playlist* musicPlayer_getCurrentAlbum() {
 }
 
 const Track* musicPlayer_getCurrentTrack() {
-    const Playlist* current_album = musicPlayer_getCurrentAlbum();
+    const Album* current_album = musicPlayer_getCurrentAlbum();
     if (current_album == nullptr) return nullptr;
 
     if (current_track_index >= current_album->tracks.count) return nullptr;
