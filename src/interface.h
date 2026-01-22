@@ -11,12 +11,20 @@ constexpr char INTERFACE_WINDOW_DEFAULT_TITLE[] = "Paco's Music Player";
 constexpr int INTERFACE_TARGET_FPS = 60;
 
 typedef struct {
+    const char** names;
+    int count;
+} ListviewValues;
+
+typedef struct {
     // Controls
     int listview_albums_scroll_index;
     int listview_albums_active;
+    ListviewValues listview_albums_values;
+
     int listview_tracks_scroll_index;
     int listview_tracks_active;
     bool listview_tracks_selected;
+    ListviewValues* listview_tracks_values; // Each album has a corresponding set of listview values
 
     bool button_shuffle_pressed;
     bool button_previous_pressed;
@@ -31,12 +39,6 @@ typedef struct {
     // Other stuff
     const char* album_name;
     const char* track_name;
-
-    const char** album_list_str;
-    size_t album_list_count;
-
-    const char** tracklist_str;
-    size_t tracklist_capacity;
 
     float time_played;
     float time_length;

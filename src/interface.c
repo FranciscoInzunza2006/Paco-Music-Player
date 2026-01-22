@@ -32,10 +32,20 @@ GuiLayoutState interfaceInit() {
 
     const Albums* album_list = musicPlayer_getAlbumList();
     if (album_list != nullptr) {
-        state.album_list_str = malloc(sizeof(char*) * album_list->count);
-        state.album_list_count = album_list->count;
-        for (size_t i = 0; i < album_list->count; i++) {
-            state.album_list_str[i] = album_list->items[i].name;
+        state.listview_albums_values.names = malloc(sizeof(char*) * album_list->count);
+        state.listview_albums_values.count = (int)album_list->count;
+
+        state.listview_tracks_values = malloc(album_list->count * sizeof(ListviewValues));
+        for (size_t album_index = 0; album_index < album_list->count; album_index++) {
+            const Album* album = &album_list->items[album_index];
+            state.listview_albums_values.names[album_index] = album->name;
+
+            ListviewValues* vals = &state.listview_tracks_values[album_index];
+            vals->names = malloc(sizeof(char*) * album->tracks.count);
+            vals->count = (int)album->tracks.count;
+            for (size_t track_index = 0; track_index < album->tracks.count; track_index++) {
+                vals->names[track_index] = album->tracks.items[track_index].title;
+            }
         }
     }
 
@@ -88,23 +98,23 @@ static void processState(GuiLayoutState* state) {
     // Update track info
     const Track* track = musicPlayer_getCurrentTrack();
     if (track != nullptr && (state->track_name != track->title)) {
-        const char* a = state->album_name;
+        //const char* a = state->album_name;
         state->track_name = track->title;
         state->album_name = track->album;
         state->time_length = musicPlayer_getTimeLength();
 
         // Update tracklist
-        const Album* album = musicPlayer_getCurrentAlbum();
-        if (album != nullptr && (state->tracklist_str == nullptr || strcmp(a, album->name) != 0)) {
-            if (state->tracklist_capacity < album->tracks.count) {
-                state->tracklist_capacity = album->tracks.count;
-                state->tracklist_str = malloc(state->tracklist_capacity * sizeof(char*));
-            }
-
-            for (size_t i = 0; i < album->tracks.count; i++) {
-                state->tracklist_str[i] = album->tracks.items[i].title;
-            }
-        }
+        // const Album* album = musicPlayer_getCurrentAlbum();
+        // if (album != nullptr && (state->tracklist_str == nullptr || strcmp(a, album->name) != 0)) {
+        //     if (state->foo_count < album->tracks.count) {
+        //         state->foo_count = album->tracks.count;
+        //         state->tracklist_str = malloc(state->foo_count * sizeof(char*));
+        //     }
+        //
+        //     for (size_t i = 0; i < album->tracks.count; i++) {
+        //         state->tracklist_str[i] = album->tracks.items[i].title;
+        //     }
+        // }
     }
 
     if (state->sliderbar_progress_selected && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -135,18 +145,19 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     GuiLabel((Rectangle){24, 280, 256, 32}, state->album_name);
 
     // Album selection
-    int x = state->listview_albums_active;
+    //int x = state->listview_albums_active;
     GuiListViewEx((Rectangle){24, 312, 256, 120},
-                state->album_list_str, (int)state->album_list_count,
+                state->listview_albums_values.names, state->listview_albums_values.count,
                 &state->listview_albums_scroll_index, &state->listview_albums_active, nullptr);
-    if (x != state->listview_albums_active) {
-        musicPlayer_changeAlbum(state->listview_albums_active);
-    }
+    // if (x != state->listview_albums_active) {
+    //     musicPlayer_changeAlbum(state->listview_albums_active);
+    // }
 
     // Tracklist
+    const ListviewValues tracklist_titles = state->listview_tracks_values[state->listview_albums_active];
     const int track_active = state->listview_tracks_active;
     GuiListViewEx((Rectangle){296, 24, 480, 280},
-                  state->tracklist_str, (int)state->tracklist_capacity,
+                  tracklist_titles.names, tracklist_titles.count,
                   &state->listview_tracks_scroll_index, &state->listview_tracks_active, nullptr);
     state->listview_tracks_selected = track_active != state->listview_tracks_active;
 
