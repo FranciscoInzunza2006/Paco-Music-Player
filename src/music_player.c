@@ -102,6 +102,8 @@ void musicPlayer_nextTrack() {
 
 // Setters
 void musicPlayer_changeAlbum(const size_t index) {
+    if (current_album_index == index) return;
+
     current_album_index = index;
     current_track_index = -1;
 
@@ -112,6 +114,7 @@ void musicPlayer_changeAlbum(const size_t index) {
 }
 
 void musicPlayer_changeTrack(const size_t index) {
+    if (current_track_index == index) return;
     current_track_index = index;
 
     const size_t current_album_tracks_count = albums.items[current_album_index].tracks.count;

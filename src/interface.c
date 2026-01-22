@@ -152,13 +152,14 @@ static void drawAndUpdateState(GuiLayoutState* state) {
     GuiListViewEx((Rectangle){296, 24, 480, 280},
                   tracklist_titles.names, tracklist_titles.count,
                   scroll, &active, nullptr);
-    state->listview_tracks_selected = active != x;
-    if (state->listview_tracks_selected) {
-        state->listview_tracks_active = active;
-        state->listview_tracks_scroll_index = *scroll;
-        hacky_index = 0;
+    if (active != -1) {
+        state->listview_tracks_selected = active != x;
+        if (state->listview_tracks_selected) {
+            state->listview_tracks_active = active;
+            state->listview_tracks_scroll_index = *scroll;
+            hacky_index = 0;
+        }
     }
-
 
     // Controls
     state->button_shuffle_pressed = GuiButton((Rectangle){320, 320, 32, 32}, "#077#");
