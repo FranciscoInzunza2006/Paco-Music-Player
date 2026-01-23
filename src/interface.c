@@ -64,6 +64,11 @@ GuiLayoutState interfaceInit() {
     SetTargetFPS(INTERFACE_TARGET_FPS);
 
     GuiLoadStyleJungle();
+    //GuiSetStyle(DEFAULT, TEXT_SIZE, 50);
+    GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+    GuiSetStyle(LISTVIEW, LIST_ITEMS_SPACING, 0);
+    GuiSetStyle(LISTVIEW, TEXT_PADDING, 4);
+
     return state;
 }
 

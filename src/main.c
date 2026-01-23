@@ -12,8 +12,8 @@ int main(void) {
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
-        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
-        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\music\\UNDERTALE Soundtrack",
+        //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
         //"D:\\Musica\\OFF",
         //"D:\\Musica\\Ribbit",
     };

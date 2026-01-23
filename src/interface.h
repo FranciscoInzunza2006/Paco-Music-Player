@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <stddef.h>
 
 constexpr int INTERFACE_WINDOW_WIDTH = 800;
 constexpr int INTERFACE_WINDOW_HEIGHT = 450;
