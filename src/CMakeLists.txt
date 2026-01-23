@@ -26,6 +26,7 @@ target_link_libraries(GUI
         PRIVATE raygui
         PRIVATE MusicPlayer
 )
+target_include_directories(GUI PRIVATE ${raygui_SOURCE_DIR})
 
 add_executable(Paco_Music_Player main.c)
 target_link_libraries(Paco_Music_Player

@@ -6,6 +6,7 @@
 
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
+#include "styles/jungle/style_jungle.h"
 
 #include "raylib.h"
 #include "music_player.h"
@@ -62,6 +63,7 @@ GuiLayoutState interfaceInit() {
     SetWindowState(FLAG_WINDOW_ALWAYS_RUN);
     SetTargetFPS(INTERFACE_TARGET_FPS);
 
+    GuiLoadStyleJungle();
     return state;
 }
 
