@@ -22,7 +22,12 @@ static void createTrackListviewValues(ListviewValues* out, const Album* album) {
     out->names = malloc(sizeof(char*) * album->tracks.count);
     out->count = (int) album->tracks.count;
     for (size_t track_index = 0; track_index < album->tracks.count; track_index++) {
-        out->names[track_index] = album->tracks.items[track_index].title;
+        const Track* track = &album->tracks.items[track_index];
+
+        size_t needed_size = snprintf(nullptr, 0, "%3u. %s", track->track_number, track->title);
+        char* a = malloc((needed_size + 1) * sizeof(char)); // You are allowed to do this?
+        snprintf(a, needed_size + 1, "%3u. %s", track->track_number, track->title);
+        out->names[track_index] = a;
     }
 }
 
