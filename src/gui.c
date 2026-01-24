@@ -17,6 +17,7 @@ static void portableWindow(GuiPacosState* state);
 static void ButtonPlay(const GuiPacosState* state);
 static void AlbumListview(GuiPacosState* state);
 static void TracksListview(GuiPacosState* state);
+static void ProgressSliderbar(GuiPacosState* state);
 
 static const char* formatToTime(float time_in_seconds);
 static char* copyString(const char* source);
@@ -67,9 +68,7 @@ void guiUpdate(GuiPacosState* state) {
     if (state->sliderbar_volumeValue != musicPlayer_getVolume()) musicPlayer_setVolume(state->sliderbar_volumeValue);
 
     // Progress sliderbar
-    GuiSliderBar(state->layoutRecs[10],
-                 formatToTime(musicPlayer_getTimePlayed()), formatToTime(musicPlayer_getTimeLength()),
-                 &state->sliderbar_progressValue, 0, 1);
+    ProgressSliderbar(state);
 
     // Trackname label
     GuiLabel(state->layoutRecs[12], GuiIconText(ICON_FILETYPE_AUDIO, track->title));
@@ -216,6 +215,28 @@ static void TracksListview(GuiPacosState* state) {
         state->listview_album_tracksActive = track_active;
         musicPlayer_changeAlbum(state->listview_albumsActive);
         musicPlayer_changeTrack(track_active);
+    }
+}
+
+static void ProgressSliderbar(GuiPacosState* state) {
+    const float time_played = musicPlayer_getTimePlayed();
+    const float time_length = musicPlayer_getTimeLength();
+
+    // If not clicking bar: Update bar to correctly reflect the position in the music
+    // If clicking bar: Wait until mouse is released to update position
+    if (!state->sliderbar_progress_selected) state->sliderbar_progressValue = time_played / time_length;
+
+    GuiSliderBar(state->layoutRecs[10],
+             formatToTime(state->sliderbar_progressValue * time_length), formatToTime(time_length),
+             &state->sliderbar_progressValue, 0, 1);
+    state->sliderbar_progress_selected = time_played / time_length != state->sliderbar_progressValue;
+
+    // Sliderbar was released
+    if (state->sliderbar_progress_selected && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        state->sliderbar_progress_selected = false;
+
+        if (state->sliderbar_progressValue > 1.0f) musicPlayer_nextTrack();
+        else musicPlayer_setProgress(state->sliderbar_progressValue);
     }
 }
 

@@ -39,6 +39,8 @@ typedef struct {
     // Listview values
     ListviewValues listview_albums_values;
     ListviewValues* listview_tracks_values; // Each album has a corresponding set of listview values
+
+    bool sliderbar_progress_selected;
 } GuiPacosState;
 
 GuiPacosState guiInit();
