@@ -1,25 +1,25 @@
 #
 # rgl layout text file (v4.0) - raygui layout file generated using rGuiLayout
 #
-# Number of controls:     14
+# Number of controls:     13
 #
 # Ref. window:    r <x> <y> <width> <height>
 # Anchor info:    a <id> <name> <posx> <posy> <enabled>
 # Control info:   c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
-r 0 40 -1 -1
-a 001 origin 0 0 1
-c 000 23 album_image 24 24 256 256 1 
-c 001 4 label_album_name 24 280 256 32 1 Album name
-c 002 21 listview_albums 24 312 256 120 1 ONE;TWO;THREE
-c 003 21 listview_album_tracks 296 24 480 280 1 ONE;TWO;THREE;
-c 004 6 label_current_track_name 392 400 384 32 1 #124#Song Name
+r 0 0 -1 -1
+a 001 anchor_window_contents 112 168 1
+a 002 anchor_origin 112 144 1
+c 000 0 windowbox_main 0 0 800 472 2 #124#Paco's Music Player
+c 001 23 album_image 24 24 256 256 1 
+c 002 4 label_album_name 24 280 256 32 1 Album name
+c 003 21 listview_albums 24 312 256 120 1 ONE;TWO;THREE
+c 004 21 listview_album_tracks 296 24 480 280 1 ONE;TWO;THREE;
 c 005 5 button_shuffle 320 320 32 32 1 #077#
 c 006 5 button_previous 376 320 32 32 1 #129#
 c 007 5 button_play 424 320 32 32 1 #131#
 c 008 5 button_next 472 320 32 32 1 #134#
-c 009 6 label_speaker_icon 512 320 32 32 1 #122#
-c 010 17 sliderbar_volume 552 328 224 16 1 
-c 011 4 label_progress 320 368 64 32 1 00:00
-c 012 17 sliderbar_progress 392 376 384 16 1 
-c 013 0 WindowBox005 10 -30 10 10 0 
+c 009 17 sliderbar_volume 552 328 224 16 1 #122#
+c 010 17 sliderbar_progress 392 376 384 16 1 00:00
+c 011 0 WindowBox005 10 10 10 10 0 
+c 012 4 label_track_name 392 400 384 32 1 #011#Song name

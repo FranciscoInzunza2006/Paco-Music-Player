@@ -20,7 +20,7 @@ target_link_libraries(MusicPlayer
         PRIVATE raylib
 )
 
-add_library(GUI STATIC interface.c interface.h)
+add_library(GUI STATIC gui.c gui.h)
 target_link_libraries(GUI
         PRIVATE raylib
         PRIVATE raygui

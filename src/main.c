@@ -3,7 +3,7 @@
 #include "tracks.h"
 
 #include "music_player.h"
-#include "interface.h"
+#include "gui.h"
 
 Tracks getTracksFromPaths();
 
@@ -20,18 +20,15 @@ int main(void) {
     constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
 
     musicPlayer_init(MUSIC_DIRECTORIES_PATH, MUSIC_DIRECTORIES_COUNT);
-    GuiLayoutState state = interfaceInit();
+    GuiPacosState state = guiInit();
 
     musicPlayer_play();
-    while (interfaceShouldUpdate()) {
+    while (guiShouldUpdate()) {
         // Update
         musicPlayer_update();
-        interfaceUpdate(&state);
-
-        // Draw
-
+        guiUpdate(&state);
     }
-    interfaceCleanUp();
+    guiCleanUp();
 
     //freeTrackList(&all_tracks);
     //freeAlbumList(&albums, false);
