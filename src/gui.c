@@ -1,11 +1,16 @@
 #include "gui.h"
 
+#include <stdlib.h>
+
 #define RAYGUI_IMPLEMENTATION
 #include "music_player.h"
 #include "raygui.h"
 #include "styles/jungle/style_jungle.h"
 
 static GuiPacosState initState();
+static void createAlbumListviewValues(GuiPacosState* state);
+static void createTrackListviewValues(ListviewValues* out, const Album* album);
+
 static void styleGui();
 
 static void portableWindow(GuiPacosState* state);
@@ -49,11 +54,25 @@ void guiUpdate(GuiPacosState* state) {
     GuiLabel(state->layoutRecs[2], album->name);
 
     // Album listview
-    GuiListView(state->layoutRecs[3], "ONE;TWO;THREE", &state->listview_albumsScrollIndex, &state->listview_albumsActive);
+    int album_active = state->listview_albumsActive;
+    GuiListViewEx(state->layoutRecs[3],
+        state->listview_albums_values.names, state->listview_albums_values.count,
+        &state->listview_albumsScrollIndex, &album_active, nullptr);
+    if (album_active != -1 && album_active != state->listview_albumsActive) {
+        state->listview_albumsActive = album_active;
+        state->listview_album_tracksScrollIndex = 0;
+    }
 
     // Tracks listview
-    GuiListView(state->layoutRecs[4], "ONE;TWO;THREE;", &state->listview_album_tracksScrollIndex,
-                &state->listview_album_tracksActive);
+    int track_active = state->listview_album_tracksActive;
+    GuiListViewEx(state->layoutRecs[4],
+        state->listview_tracks_values[state->listview_albumsActive].names, state->listview_tracks_values[state->listview_albumsActive].count,
+        &state->listview_album_tracksScrollIndex, &track_active, nullptr);
+    if (track_active != -1 && track_active != state->listview_album_tracksActive) {
+        state->listview_album_tracksActive = track_active;
+        musicPlayer_changeAlbum(album_active);
+        musicPlayer_changeTrack(track_active);
+    }
 
     // Controls buttons
     if (GuiButton(state->layoutRecs[5], "#077#")) ButtonShuffle();
@@ -87,6 +106,8 @@ GuiPacosState initState() {
     state.windowbox_mainActive = true;
     state.windowPosition = GetWindowPosition();
 
+    createAlbumListviewValues(&state);
+
     // state.listview_albumsScrollIndex = 0;
     // state.listview_albumsActive = 0;
     // state.listview_album_tracksScrollIndex = 0;
@@ -109,6 +130,38 @@ GuiPacosState initState() {
     state.layoutRecs[12] = (Rectangle){state.anchor_window_contents.x + 392, state.anchor_window_contents.y + 400, 384, 32};
 
     return state;
+}
+
+static void createTrackListviewValues(ListviewValues* out, const Album* album) {
+    out->names = malloc(sizeof(char*) * album->tracks.count);
+    out->count = (int) album->tracks.count;
+    for (size_t track_index = 0; track_index < album->tracks.count; track_index++) {
+        const Track* track = &album->tracks.items[track_index];
+
+        size_t needed_size = snprintf(nullptr, 0, "%3u. %s", track->track_number, track->title);
+        char* a = malloc((needed_size + 1) * sizeof(char)); // You are allowed to do this?
+        snprintf(a, needed_size + 1, "%3u. %s", track->track_number, track->title);
+        out->names[track_index] = a;
+    }
+}
+
+static void createAlbumListviewValues(GuiPacosState* state) {
+    const Albums* album_list = musicPlayer_getAlbumList();
+    if (album_list != nullptr) {
+        state->listview_albums_values.names = malloc(sizeof(char*) * album_list->count);
+        state->listview_albums_values.count = (int) album_list->count;
+
+        state->listview_tracks_values = malloc(album_list->count * sizeof(ListviewValues));
+        for (size_t album_index = 0; album_index < album_list->count; album_index++) {
+            const Album* album = &album_list->items[album_index];
+            size_t foo = strlen(album->name);
+            char* a =  malloc((foo+1) * sizeof(char));
+            strcpy(a, album->name);
+            state->listview_albums_values.names[album_index] = a;
+
+            createTrackListviewValues(&state->listview_tracks_values[album_index], album);
+        }
+    }
 }
 
 void styleGui() {

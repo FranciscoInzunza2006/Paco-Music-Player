@@ -14,6 +14,11 @@ constexpr char INTERFACE_WINDOW_DEFAULT_TITLE[] = "Paco's Music Player";
 constexpr int INTERFACE_TARGET_FPS = 60;
 
 typedef struct {
+    const char** names;
+    int count;
+} ListviewValues;
+
+typedef struct {
     Vector2 anchor_window_contents;
 
     bool windowbox_mainActive;
@@ -30,6 +35,10 @@ typedef struct {
     bool dragWindow;
     Vector2 panOffset;
     Vector2 windowPosition;
+
+    // Listview values
+    ListviewValues listview_albums_values;
+    ListviewValues* listview_tracks_values; // Each album has a corresponding set of listview values
 } GuiPacosState;
 
 GuiPacosState guiInit();
