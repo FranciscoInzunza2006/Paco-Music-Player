@@ -23,7 +23,7 @@ int main(void) {
     GuiPacosState state = guiInit();
 
     musicPlayer_play();
-    while (guiShouldUpdate()) {
+    while (guiShouldUpdate(&state)) {
         // Update
         musicPlayer_update();
         guiUpdate(&state);

@@ -25,11 +25,16 @@ typedef struct {
     float sliderbar_progressValue;
 
     Rectangle layoutRecs[13];
+
+    // Portable window
+    bool dragWindow;
+    Vector2 panOffset;
+    Vector2 windowPosition;
 } GuiPacosState;
 
 GuiPacosState guiInit();
 
-bool guiShouldUpdate();
+bool guiShouldUpdate(const GuiPacosState* state);
 
 void guiUpdate(GuiPacosState* state);
 
