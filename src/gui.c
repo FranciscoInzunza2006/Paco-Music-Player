@@ -1,14 +1,21 @@
 #include "gui.h"
 
 #define RAYGUI_IMPLEMENTATION
+#include "music_player.h"
 #include "raygui.h"
 #include "styles/jungle/style_jungle.h"
 
 static GuiPacosState initState();
-
 static void styleGui();
 
 static void portableWindow(GuiPacosState* state);
+
+static void ButtonShuffle();
+static void ButtonPrevious();
+static void ButtonPlay();
+static void ButtonNext();
+
+static const char* formatToTime(float time_in_seconds);
 
 GuiPacosState guiInit() {
     SetConfigFlags(FLAG_WINDOW_UNDECORATED | FLAG_WINDOW_TRANSPARENT | FLAG_WINDOW_ALWAYS_RUN);
@@ -27,41 +34,44 @@ bool guiShouldUpdate(const GuiPacosState* state) {
     return !WindowShouldClose() && state->windowbox_mainActive;
 }
 
-static void ButtonShuffle() {
-    // TODO: Implement control logic
-}
-
-static void ButtonPrevious() {
-    // TODO: Implement control logic
-}
-
-static void ButtonPlay() {
-    // TODO: Implement control logic
-}
-
-static void ButtonNext() {
-    // TODO: Implement control logic
-}
-
 void guiUpdate(GuiPacosState* state) {
     portableWindow(state);
 
     if (!state->windowbox_mainActive) return;
     BeginDrawing();
+    const Album* album = musicPlayer_getCurrentAlbum();
+    const Track* track = musicPlayer_getCurrentTrack();
 
+    // Windowbox
     state->windowbox_mainActive = !GuiWindowBox(state->layoutRecs[0], "#124#Paco's Music Player");
-    GuiDummyRec(state->layoutRecs[1], nullptr);
-    GuiLabel(state->layoutRecs[2], "Album name");
+
+    GuiDummyRec(state->layoutRecs[1], "(Track Picture)");
+    GuiLabel(state->layoutRecs[2], album->name);
+
+    // Album listview
     GuiListView(state->layoutRecs[3], "ONE;TWO;THREE", &state->listview_albumsScrollIndex, &state->listview_albumsActive);
+
+    // Tracks listview
     GuiListView(state->layoutRecs[4], "ONE;TWO;THREE;", &state->listview_album_tracksScrollIndex,
                 &state->listview_album_tracksActive);
+
+    // Controls buttons
     if (GuiButton(state->layoutRecs[5], "#077#")) ButtonShuffle();
     if (GuiButton(state->layoutRecs[6], "#129#")) ButtonPrevious();
     if (GuiButton(state->layoutRecs[7], "#131#")) ButtonPlay();
     if (GuiButton(state->layoutRecs[8], "#134#")) ButtonNext();
-    GuiSliderBar(state->layoutRecs[9], "#122#", nullptr, &state->sliderbar_volumeValue, 0, 100);
-    GuiSliderBar(state->layoutRecs[10], "00:00", nullptr, &state->sliderbar_progressValue, 0, 100);
-    GuiLabel(state->layoutRecs[12], "#011#Song name");
+
+    // Volume sliderbar
+    GuiSliderBar(state->layoutRecs[9], "#122#", nullptr, &state->sliderbar_volumeValue, 0, 1);
+    if (state->sliderbar_volumeValue != musicPlayer_getVolume()) musicPlayer_setVolume(state->sliderbar_volumeValue);
+
+    // Progress sliderbar
+    GuiSliderBar(state->layoutRecs[10],
+                 formatToTime(musicPlayer_getTimePlayed()), formatToTime(musicPlayer_getTimeLength()),
+                 &state->sliderbar_progressValue, 0, 1);
+
+    // Trackname label
+    GuiLabel(state->layoutRecs[12], GuiIconText(ICON_FILETYPE_AUDIO, track->title));
 
     EndDrawing();
 }
@@ -94,7 +104,7 @@ GuiPacosState initState() {
     state.layoutRecs[7] = (Rectangle){state.anchor_window_contents.x + 424, state.anchor_window_contents.y + 320, 32, 32};
     state.layoutRecs[8] = (Rectangle){state.anchor_window_contents.x + 472, state.anchor_window_contents.y + 320, 32, 32};
     state.layoutRecs[9] = (Rectangle){state.anchor_window_contents.x + 552, state.anchor_window_contents.y + 328, 224, 16};
-    state.layoutRecs[10] = (Rectangle){state.anchor_window_contents.x + 392, state.anchor_window_contents.y + 376, 384, 16};
+    state.layoutRecs[10] = (Rectangle){state.anchor_window_contents.x + 352, state.anchor_window_contents.y + 376, 384, 16};
     state.layoutRecs[11] = (Rectangle){10, 10, 10, 10};
     state.layoutRecs[12] = (Rectangle){state.anchor_window_contents.x + 392, state.anchor_window_contents.y + 400, 384, 32};
 
@@ -127,4 +137,25 @@ void portableWindow(GuiPacosState* state) {
 
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) state->dragWindow = false;
     }
+}
+
+static void ButtonShuffle() {
+    // TODO: Implement control logic
+}
+
+static void ButtonPrevious() {
+    musicPlayer_previousTrack();
+}
+
+static void ButtonPlay() {
+    if (musicPlayer_isPlaying()) musicPlayer_pause();
+    else musicPlayer_play();
+}
+
+static void ButtonNext() {
+    musicPlayer_nextTrack();
+}
+
+static const char* formatToTime(const float time_in_seconds) {
+    return TextFormat("%02d:%02d", (int) (time_in_seconds / 60.0f), (int) time_in_seconds % 60);
 }

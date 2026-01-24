@@ -20,6 +20,6 @@ c 006 5 button_previous 376 320 32 32 1 #129#
 c 007 5 button_play 424 320 32 32 1 #131#
 c 008 5 button_next 472 320 32 32 1 #134#
 c 009 17 sliderbar_volume 552 328 224 16 1 #122#
-c 010 17 sliderbar_progress 392 376 384 16 1 00:00
+c 010 17 sliderbar_progress 352 376 384 16 1 00:00
 c 011 0 WindowBox005 10 10 10 10 0 
 c 012 4 label_track_name 392 400 384 32 1 #011#Song name
