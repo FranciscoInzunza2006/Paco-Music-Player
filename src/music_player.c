@@ -123,6 +123,10 @@ void musicPlayer_changeTrack(const size_t index) {
     changeMusic(musicPlayer_getCurrentTrack()->file_path);
 }
 
+void musicPlayer_changePlayback() {
+
+}
+
 void musicPlayer_setProgress(float progress) {
     if (progress < 0.0f) progress = 0.0f;
     if (progress > 1.0f) progress = 1.0f;

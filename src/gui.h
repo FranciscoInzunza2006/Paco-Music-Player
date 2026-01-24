@@ -42,12 +42,9 @@ typedef struct {
 } GuiPacosState;
 
 GuiPacosState guiInit();
-
 bool guiShouldUpdate(const GuiPacosState* state);
-
 void guiUpdate(GuiPacosState* state);
-
-void guiCleanUp();
+void guiCleanUp(const GuiPacosState* state);
 
 // typedef struct {
 //     const char** names;

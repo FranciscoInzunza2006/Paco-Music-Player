@@ -14,13 +14,12 @@ static void createTrackListviewValues(ListviewValues* out, const Album* album);
 static void styleGui();
 
 static void portableWindow(GuiPacosState* state);
-
-static void ButtonShuffle();
-static void ButtonPrevious();
 static void ButtonPlay();
-static void ButtonNext();
+static void AlbumListview(GuiPacosState* state);
+static void TracksListview(GuiPacosState* state);
 
 static const char* formatToTime(float time_in_seconds);
+static void freeListviewValues(ListviewValues values);
 
 GuiPacosState guiInit() {
     SetConfigFlags(FLAG_WINDOW_UNDECORATED | FLAG_WINDOW_TRANSPARENT | FLAG_WINDOW_ALWAYS_RUN);
@@ -53,32 +52,14 @@ void guiUpdate(GuiPacosState* state) {
     GuiDummyRec(state->layoutRecs[1], "(Track Picture)");
     GuiLabel(state->layoutRecs[2], album->name);
 
-    // Album listview
-    int album_active = state->listview_albumsActive;
-    GuiListViewEx(state->layoutRecs[3],
-        state->listview_albums_values.names, state->listview_albums_values.count,
-        &state->listview_albumsScrollIndex, &album_active, nullptr);
-    if (album_active != -1 && album_active != state->listview_albumsActive) {
-        state->listview_albumsActive = album_active;
-        state->listview_album_tracksScrollIndex = 0;
-    }
-
-    // Tracks listview
-    int track_active = state->listview_album_tracksActive;
-    GuiListViewEx(state->layoutRecs[4],
-        state->listview_tracks_values[state->listview_albumsActive].names, state->listview_tracks_values[state->listview_albumsActive].count,
-        &state->listview_album_tracksScrollIndex, &track_active, nullptr);
-    if (track_active != -1 && track_active != state->listview_album_tracksActive) {
-        state->listview_album_tracksActive = track_active;
-        musicPlayer_changeAlbum(album_active);
-        musicPlayer_changeTrack(track_active);
-    }
+    AlbumListview(state);
+    TracksListview(state);
 
     // Controls buttons
-    if (GuiButton(state->layoutRecs[5], "#077#")) ButtonShuffle();
-    if (GuiButton(state->layoutRecs[6], "#129#")) ButtonPrevious();
+    if (GuiButton(state->layoutRecs[5], "#077#")) musicPlayer_changePlayback();
+    if (GuiButton(state->layoutRecs[6], "#129#")) musicPlayer_previousTrack();
     if (GuiButton(state->layoutRecs[7], "#131#")) ButtonPlay();
-    if (GuiButton(state->layoutRecs[8], "#134#")) ButtonNext();
+    if (GuiButton(state->layoutRecs[8], "#134#")) musicPlayer_nextTrack();
 
     // Volume sliderbar
     GuiSliderBar(state->layoutRecs[9], "#122#", nullptr, &state->sliderbar_volumeValue, 0, 1);
@@ -95,7 +76,11 @@ void guiUpdate(GuiPacosState* state) {
     EndDrawing();
 }
 
-void guiCleanUp() {
+void guiCleanUp(const GuiPacosState* state) {
+    freeListviewValues(state->listview_albums_values);
+
+    for (size_t i = 0; i < musicPlayer_getAlbumList()->count; i++) freeListviewValues(state->listview_tracks_values[i]);
+    free(state->listview_tracks_values);
 }
 
 GuiPacosState initState() {
@@ -132,6 +117,25 @@ GuiPacosState initState() {
     return state;
 }
 
+static void createAlbumListviewValues(GuiPacosState* state) {
+    const Albums* album_list = musicPlayer_getAlbumList();
+    if (album_list != nullptr) {
+        state->listview_albums_values.names = malloc(sizeof(char*) * album_list->count);
+        state->listview_albums_values.count = (int) album_list->count;
+
+        state->listview_tracks_values = malloc(album_list->count * sizeof(ListviewValues));
+        for (size_t album_index = 0; album_index < album_list->count; album_index++) {
+            const Album* album = &album_list->items[album_index];
+            size_t foo = strlen(album->name);
+            char* a = malloc((foo + 1) * sizeof(char));
+            strcpy(a, album->name);
+            state->listview_albums_values.names[album_index] = a;
+
+            createTrackListviewValues(&state->listview_tracks_values[album_index], album);
+        }
+    }
+}
+
 static void createTrackListviewValues(ListviewValues* out, const Album* album) {
     out->names = malloc(sizeof(char*) * album->tracks.count);
     out->count = (int) album->tracks.count;
@@ -145,24 +149,6 @@ static void createTrackListviewValues(ListviewValues* out, const Album* album) {
     }
 }
 
-static void createAlbumListviewValues(GuiPacosState* state) {
-    const Albums* album_list = musicPlayer_getAlbumList();
-    if (album_list != nullptr) {
-        state->listview_albums_values.names = malloc(sizeof(char*) * album_list->count);
-        state->listview_albums_values.count = (int) album_list->count;
-
-        state->listview_tracks_values = malloc(album_list->count * sizeof(ListviewValues));
-        for (size_t album_index = 0; album_index < album_list->count; album_index++) {
-            const Album* album = &album_list->items[album_index];
-            size_t foo = strlen(album->name);
-            char* a =  malloc((foo+1) * sizeof(char));
-            strcpy(a, album->name);
-            state->listview_albums_values.names[album_index] = a;
-
-            createTrackListviewValues(&state->listview_tracks_values[album_index], album);
-        }
-    }
-}
 
 void styleGui() {
     GuiLoadStyleJungle();
@@ -192,23 +178,43 @@ void portableWindow(GuiPacosState* state) {
     }
 }
 
-static void ButtonShuffle() {
-    // TODO: Implement control logic
-}
-
-static void ButtonPrevious() {
-    musicPlayer_previousTrack();
-}
-
 static void ButtonPlay() {
     if (musicPlayer_isPlaying()) musicPlayer_pause();
     else musicPlayer_play();
 }
 
-static void ButtonNext() {
-    musicPlayer_nextTrack();
+static void AlbumListview(GuiPacosState* state) {
+    int album_active = state->listview_albumsActive;
+
+    GuiListViewEx(state->layoutRecs[3],
+                  state->listview_albums_values.names, state->listview_albums_values.count,
+                  &state->listview_albumsScrollIndex, &album_active, nullptr);
+
+    if (album_active != -1 && album_active != state->listview_albumsActive) {
+        state->listview_albumsActive = album_active;
+        state->listview_album_tracksScrollIndex = 0;
+    }
+}
+
+static void TracksListview(GuiPacosState* state) {
+    int track_active = state->listview_album_tracksActive;
+
+    const ListviewValues values = state->listview_tracks_values[state->listview_albumsActive];
+    GuiListViewEx(state->layoutRecs[4], values.names, values.count,
+                  &state->listview_album_tracksScrollIndex, &track_active, nullptr);
+
+    if (track_active != -1 && track_active != state->listview_album_tracksActive) {
+        state->listview_album_tracksActive = track_active;
+        musicPlayer_changeAlbum(state->listview_albumsActive);
+        musicPlayer_changeTrack(track_active);
+    }
 }
 
 static const char* formatToTime(const float time_in_seconds) {
     return TextFormat("%02d:%02d", (int) (time_in_seconds / 60.0f), (int) time_in_seconds % 60);
+}
+
+static void freeListviewValues(const ListviewValues values) {
+    for (int i = 0; i < values.count; i++)
+        free((void*)values.names[i]); // Ok...?
 }

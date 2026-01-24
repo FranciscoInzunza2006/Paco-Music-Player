@@ -28,7 +28,7 @@ int main(void) {
         musicPlayer_update();
         guiUpdate(&state);
     }
-    guiCleanUp();
+    guiCleanUp(&state);
 
     //freeTrackList(&all_tracks);
     //freeAlbumList(&albums, false);
