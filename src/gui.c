@@ -14,7 +14,7 @@ static ListviewValues* createTrackListviewValues();
 static void styleGui();
 
 static void portableWindow(GuiPacosState* state);
-static void ButtonPlay();
+static void ButtonPlay(const GuiPacosState* state);
 static void AlbumListview(GuiPacosState* state);
 static void TracksListview(GuiPacosState* state);
 
@@ -59,7 +59,7 @@ void guiUpdate(GuiPacosState* state) {
     // Controls buttons
     if (GuiButton(state->layoutRecs[5], "#077#")) musicPlayer_changePlayback();
     if (GuiButton(state->layoutRecs[6], "#129#")) musicPlayer_previousTrack();
-    if (GuiButton(state->layoutRecs[7], "#131#")) ButtonPlay();
+    ButtonPlay(state);
     if (GuiButton(state->layoutRecs[8], "#134#")) musicPlayer_nextTrack();
 
     // Volume sliderbar
@@ -183,9 +183,13 @@ void portableWindow(GuiPacosState* state) {
     }
 }
 
-static void ButtonPlay() {
-    if (musicPlayer_isPlaying()) musicPlayer_pause();
-    else musicPlayer_play();
+static void ButtonPlay(const GuiPacosState* state) {
+    const bool is_playing = musicPlayer_isPlaying();
+    const GuiIconName icon = is_playing ? ICON_PLAYER_PAUSE : ICON_PLAYER_PLAY;
+    if (GuiButton(state->layoutRecs[7], GuiIconText(icon, nullptr))) {
+        if (is_playing) musicPlayer_pause();
+        else musicPlayer_play();
+    }
 }
 
 static void AlbumListview(GuiPacosState* state) {
