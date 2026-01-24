@@ -8,8 +8,8 @@
 #include "styles/jungle/style_jungle.h"
 
 static GuiPacosState initState();
-static void createAlbumListviewValues(GuiPacosState* state);
-static void createTrackListviewValues(ListviewValues* out, const Album* album);
+static ListviewValues createAlbumListviewValues();
+static ListviewValues* createTrackListviewValues();
 
 static void styleGui();
 
@@ -19,6 +19,7 @@ static void AlbumListview(GuiPacosState* state);
 static void TracksListview(GuiPacosState* state);
 
 static const char* formatToTime(float time_in_seconds);
+static char* copyString(const char* source);
 static void freeListviewValues(ListviewValues values);
 
 GuiPacosState guiInit() {
@@ -91,7 +92,8 @@ GuiPacosState initState() {
     state.windowbox_mainActive = true;
     state.windowPosition = GetWindowPosition();
 
-    createAlbumListviewValues(&state);
+    state.listview_albums_values = createAlbumListviewValues();
+    state.listview_tracks_values = createTrackListviewValues();
 
     // state.listview_albumsScrollIndex = 0;
     // state.listview_albumsActive = 0;
@@ -117,38 +119,41 @@ GuiPacosState initState() {
     return state;
 }
 
-static void createAlbumListviewValues(GuiPacosState* state) {
+static ListviewValues createAlbumListviewValues() {
+    ListviewValues values = {0};
     const Albums* album_list = musicPlayer_getAlbumList();
     if (album_list != nullptr) {
-        state->listview_albums_values.names = malloc(sizeof(char*) * album_list->count);
-        state->listview_albums_values.count = (int) album_list->count;
+        values.names = malloc(sizeof(char*) * album_list->count);
+        values.count = (int) album_list->count;
 
-        state->listview_tracks_values = malloc(album_list->count * sizeof(ListviewValues));
         for (size_t album_index = 0; album_index < album_list->count; album_index++) {
             const Album* album = &album_list->items[album_index];
-            size_t foo = strlen(album->name);
-            char* a = malloc((foo + 1) * sizeof(char));
-            strcpy(a, album->name);
-            state->listview_albums_values.names[album_index] = a;
-
-            createTrackListviewValues(&state->listview_tracks_values[album_index], album);
+            values.names[album_index] = copyString(album->name);
         }
     }
+
+    return values;
 }
 
-static void createTrackListviewValues(ListviewValues* out, const Album* album) {
-    out->names = malloc(sizeof(char*) * album->tracks.count);
-    out->count = (int) album->tracks.count;
-    for (size_t track_index = 0; track_index < album->tracks.count; track_index++) {
-        const Track* track = &album->tracks.items[track_index];
+static ListviewValues* createTrackListviewValues() {
+    const Albums* album_list = musicPlayer_getAlbumList();
+    if (album_list == nullptr) return nullptr;
 
-        size_t needed_size = snprintf(nullptr, 0, "%3u. %s", track->track_number, track->title);
-        char* a = malloc((needed_size + 1) * sizeof(char)); // You are allowed to do this?
-        snprintf(a, needed_size + 1, "%3u. %s", track->track_number, track->title);
-        out->names[track_index] = a;
+    ListviewValues* values = malloc(album_list->count * sizeof(ListviewValues));
+    for (size_t album_index = 0; album_index < album_list->count; album_index++) {
+        const Album* album = &album_list->items[album_index];
+        ListviewValues* value = &values[album_index];
+
+        value->names = malloc(sizeof(char*) * album->tracks.count);
+        value->count = (int)album->tracks.count;
+        for (size_t track_index = 0; track_index < album->tracks.count; track_index++) {
+            const Track* track = &album->tracks.items[track_index];
+            value->names[track_index] = copyString(TextFormat("%3u. %s", track->track_number, track->title));
+        }
     }
-}
 
+    return values;
+}
 
 void styleGui() {
     GuiLoadStyleJungle();
@@ -217,4 +222,10 @@ static const char* formatToTime(const float time_in_seconds) {
 static void freeListviewValues(const ListviewValues values) {
     for (int i = 0; i < values.count; i++)
         free((void*)values.names[i]); // Ok...?
+}
+
+static char* copyString(const char* source) {
+    char* str = malloc((strlen(source) + 1) * sizeof(char));
+    strcpy(str, source);
+    return str;
 }
