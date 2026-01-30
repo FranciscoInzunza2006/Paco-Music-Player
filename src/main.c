@@ -9,6 +9,7 @@ Tracks getTracksFromPaths();
 
 int main(void) {
     const char* MUSIC_DIRECTORIES_PATH[] = {
+#if __WIN32__
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\Terraria Official Soundtrack",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot OST",
         //"C:\\Program Files (x86)\\Steam\\steamapps\\music\\OneShot Solstice OST",
@@ -16,8 +17,11 @@ int main(void) {
         "C:\\Program Files (x86)\\Steam\\steamapps\\music\\DELTARUNESoundtrack",
         //"D:\\Musica\\OFF",
         //"D:\\Musica\\Ribbit",
+#else
+        "/home/elpaco/Music/OFF Official Soundtrack"
+#endif
     };
-    constexpr size_t MUSIC_DIRECTORIES_COUNT = _countof(MUSIC_DIRECTORIES_PATH);
+    constexpr size_t MUSIC_DIRECTORIES_COUNT = sizeof(MUSIC_DIRECTORIES_PATH) / sizeof(MUSIC_DIRECTORIES_PATH[0]);
 
     musicPlayer_init(MUSIC_DIRECTORIES_PATH, MUSIC_DIRECTORIES_COUNT);
     GuiPacosState state = guiInit();
